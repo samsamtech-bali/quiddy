@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct QuiddyApp: App {
+    @StateObject private var router = Router.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+//            BadgeView()
+                .environmentObject(router)
         }
     }
 }
