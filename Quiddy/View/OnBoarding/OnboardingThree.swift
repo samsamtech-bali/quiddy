@@ -11,37 +11,84 @@ struct OnboardingThree: View {
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var registerVM: RegisterViewModel
     
-//    @State private var username = ""
-//    @State private var generatedCode = ""
-    
     var body: some View {
-        VStack {
-            TextField("Username", text: $registerVM.username)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled(true)
-            .textFieldStyle(.roundedBorder)
+        ZStack {
+            Color(hex: "#0D0D11")
+                .ignoresSafeArea()
             
-            Text(registerVM.quiddyCode != "" ? registerVM.quiddyCode : "code has not been generated")
-            
-            Button("Continue", action: {
-//                registerVM.username = username
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Button(action: {
+                        router.path.removeLast()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 20))
+                    }
+                    
+                    ProgressBar(progress: 1, total: 6)
+                        .padding(.leading, 12)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
                 
-                let generatedCode = registerVM.generateRandomUniqueString()
-//                TODO: check if code already exist
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Let's get to know your story")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text("Your answers will help shape the app\naround your needs.")
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundColor(Color(hex: "#8E8E93"))
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 40)
                 
-                registerVM.quiddyCode = generatedCode
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("What can we call you?")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(.white)
+                        
+                        TextField("e.g. John", text: $registerVM.username)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled(true)
+                            .font(.system(size: 17))
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.clear)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color(hex: "#3A3A3C"), lineWidth: 1)
+                            )
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 40)
                 
+                Spacer()
                 
-                router.path.append(Route.ciggerateView)
-            })
-            .buttonStyle(.bordered)
+                Button(action: {
+                    let generatedCode = registerVM.generateRandomUniqueString()
+                    registerVM.quiddyCode = generatedCode
+                    router.path.append(Route.ciggerateView)
+                }) {
+                    Text("Continue")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.white, lineWidth: 1)
+                        )
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
+            }
         }
-        .padding()
+        .navigationBarHidden(true)
     }
-}
-
-#Preview {
-    OnboardingThree()
-        .environmentObject(Router.shared)
-        .environmentObject(RegisterViewModel())
 }
