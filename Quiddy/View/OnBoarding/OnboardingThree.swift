@@ -24,15 +24,20 @@ struct OnboardingThree: View {
             Text(registerVM.quiddyCode != "" ? registerVM.quiddyCode : "code has not been generated")
             
             Button("Continue", action: {
-//                registerVM.username = username
-                
-                let generatedCode = registerVM.generateRandomUniqueString()
-//                TODO: check if code already exist
-                
-                registerVM.quiddyCode = generatedCode
-                
-                
-                router.path.append(Route.ciggerateView)
+                Task {
+                    var generatedCode: String
+                    
+                    generatedCode = registerVM.generateRandomUniqueString()
+                    
+                    while await registerVM.isCodeExisted(code: generatedCode) == true {
+                        generatedCode = registerVM.generateRandomUniqueString()
+                    }
+                    
+                    registerVM.quiddyCode = generatedCode
+                    
+                    
+                    router.path.append(Route.ciggerateView)
+                }
             })
             .buttonStyle(.bordered)
         }

@@ -49,7 +49,7 @@ class BadgeViewModel: ObservableObject {
         do {
             let badgeRecord = try await self.databasePublic.record(for: badge.getRecord().recordID)
             badgeRecord.setValue(BadgeFields.title.rawValue, forKey: newBadgeTitle)
-            let savedRecord = try await self.databasePublic.save(badgeRecord)
+            _ = try await self.databasePublic.save(badgeRecord)
             badge.badgeTitle = newBadgeTitle
         } catch {
             print("Error updating badge record: \(error)")
@@ -68,7 +68,6 @@ class BadgeViewModel: ObservableObject {
     }
     
     func fetchCurrentUserRecordName() async -> String {
-        
         do {
             let userRecordName = try await container.userRecordID()
             print("user record name should be: \(userRecordName)")
@@ -77,9 +76,6 @@ class BadgeViewModel: ObservableObject {
             print("Error updating badge record: \(error)")
             return "No data"
         }
-        
-        
-        
     }
     
 }

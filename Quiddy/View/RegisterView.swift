@@ -26,6 +26,7 @@ struct RegisterView: View {
             Text(generatedCode != "" ? generatedCode : "code has not been generated")
         }
         .padding()
+        
             
             
         

@@ -25,33 +25,44 @@ class CloudKitManager: ObservableObject {
         CKContainer.default().accountStatus { [weak self] returnedStatus, returnedError in
             switch returnedStatus {
             case .available:
-                self?.isSignedInToiCloud = true
+                DispatchQueue.main.async {
+                    self?.isSignedInToiCloud = true
+                }
+                
             case .couldNotDetermine:
-                self?.error = CloudKitError.iCloudAccountNotDetermined.localizedDescription
+                DispatchQueue.main.async {
+                    self?.error = CloudKitError.iCloudAccountNotDetermined.localizedDescription
+                }
             case .noAccount:
-                self?.error = CloudKitError.iCloudAccountNotFound.localizedDescription
+                DispatchQueue.main.async {
+                    self?.error = CloudKitError.iCloudAccountNotFound.localizedDescription
+                }
             case .restricted:
-                self?.error = CloudKitError.iCloudAccountRestricted.localizedDescription
+                DispatchQueue.main.async {
+                    self?.error = CloudKitError.iCloudAccountRestricted.localizedDescription
+                }
             default:
-                self?.error = CloudKitError.iCloudAccountUnknown.localizedDescription
+                DispatchQueue.main.async {
+                    self?.error = CloudKitError.iCloudAccountUnknown.localizedDescription
+                }
             }
         }
     }
     
     func requestPermission() {
-//        CKContainer.default().requestApplicationPermission([.userDiscoverability]) { returnedStatus, returnedError in
-//            DispatchQueue.main.async {
-//                if returnedStatus == .granted {
-//                    self.permissionStatus = true
-//                }
-//            }
-//        }
-//        
-//        CKContainer.default().perm
+        //        CKContainer.default().requestApplicationPermission([.userDiscoverability]) { returnedStatus, returnedError in
+        //            DispatchQueue.main.async {
+        //                if returnedStatus == .granted {
+        //                    self.permissionStatus = true
+        //                }
+        //            }
+        //        }
+        //
+        //        CKContainer.default().perm
         
-//        let permissions =  CKContainer.ApplicationPermissions()
-//        if let share = CKShare.Participant.perm
-//        
+        //        let permissions =  CKContainer.ApplicationPermissions()
+        //        if let share = CKShare.Participant.perm
+        //
         
     }
     
@@ -63,33 +74,37 @@ class CloudKitManager: ObservableObject {
     }
     
     func discoveriCloudUser(id: CKRecord.ID) {
-//        CKContainer.default().discoverUserIdentity(withUserRecordID: id) { [weak self] returnedIdentity, returnedError in
-//            DispatchQueue.main.async {
-//                if let name = returnedIdentity?.nameComponents?.givenName {
-//                    self?.username = name
-//                }
-//            }}
+        //        CKContainer.default().discoverUserIdentity(withUserRecordID: id) { [weak self] returnedIdentity, returnedError in
+        //            DispatchQueue.main.async {
+        //                if let name = returnedIdentity?.nameComponents?.givenName {
+        //                    self?.username = name
+        //                }
+        //            }}
+        
+        
         
         // (CKRecord.ID?, (any Error)?)
         // (Result<[CKRecord.ID : Result<CKRecord, any Error>], any Error>)
-//        CKContainer.default().publicCloudDatabase.fetch(withRecordIDs: [id], desiredKeys: nil) { result in
-//            switch result {
-//            case .success(let recordResults):
-//                for (recordID, individualRecordResult) in recordResults {
-//                    switch individualRecordResult {
-//                    case .success(let record):
-////                        self.username = record["name"] as? String ?? "no name"
-//                        let lookUpInfo = CKUserIdentity.LookupInfo(userRecordID: recordID)
-//                        self.username = lookUpInfo.
-//                    case .failure(let individualError):
-//                        print("Failed to fetch record with id: \(recordID.recordName): \(individualError.localizedDescription)")
-//                    }
-//                }
-//            case .failure(let overallError):
-//                print("Overall CloudKit operation failed: \(overallError.localizedDescription)")
-//            }
-//        }
-            
+        
+        
+        //        CKContainer.default().publicCloudDatabase.fetch(withRecordIDs: [id], desiredKeys: nil) { result in
+        //            switch result {
+        //            case .success(let recordResults):
+        //                for (recordID, individualRecordResult) in recordResults {
+        //                    switch individualRecordResult {
+        //                    case .success(let record):
+        ////                        self.username = record["name"] as? String ?? "no name"
+        //                        let lookUpInfo = CKUserIdentity.LookupInfo(userRecordID: recordID)
+        //                        self.username = lookUpInfo.
+        //                    case .failure(let individualError):
+        //                        print("Failed to fetch record with id: \(recordID.recordName): \(individualError.localizedDescription)")
+        //                    }
+        //                }
+        //            case .failure(let overallError):
+        //                print("Overall CloudKit operation failed: \(overallError.localizedDescription)")
+        //            }
+        //        }
+        
         CKContainer.default().fetchShareParticipant(withUserRecordID: id) { participant, error in
             guard let participant = participant, error == nil else {
                 print("Error fetching share participant: \(error?.localizedDescription ?? "Unknown error")")
@@ -102,12 +117,12 @@ class CloudKitManager: ObservableObject {
             }
             
         }
-            
-            
-//            guard let userRecord = returnedIdentity else {
-//                print("User record not found")
-//                return
-//            }
+        
+        
+        //            guard let userRecord = returnedIdentity else {
+        //                print("User record not found")
+        //                return
+        //            }
         
     }
     

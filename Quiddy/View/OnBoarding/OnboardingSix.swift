@@ -14,8 +14,26 @@ struct OnboardingSix: View {
         VStack {
             Text("Done")
             
-            Button("Continue", action: {
-                
+            
+            Text("quiddy code: \(registerVM.quiddyCode)")
+            Button(
+                "Continue",
+                action: {
+                    Task {
+                       let userData = await registerVM.createNewUser(
+                            username: registerVM.username,
+                            quiddyCode: registerVM.quiddyCode,
+                            stopDate: registerVM.stopDate,
+                            updatedStopDate: registerVM.updatedStopDate,
+                            cigPerDay: registerVM.cigPerDay,
+                            pricePerCig: registerVM.pricePerCig
+                        )
+                        
+                        
+                        print("user data: \(String(describing: userData))")
+                        
+                        BuddyView()
+                    }
             })
         }
         .onAppear {
