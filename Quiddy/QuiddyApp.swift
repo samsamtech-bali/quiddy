@@ -13,8 +13,7 @@ struct QuiddyApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-//            BadgeView()
+            MainTabView()
                 .environmentObject(router)
         }
     }
