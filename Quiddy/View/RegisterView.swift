@@ -28,11 +28,6 @@ struct RegisterView: View {
         .padding()
         
         
-        
-            
-            
-        
-        
     }
 }
 

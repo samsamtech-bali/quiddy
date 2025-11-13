@@ -51,3 +51,10 @@ enum RecordNames: String {
     case Badges
     case QuiddyUsers
 }
+
+
+let badgeList = [
+    (name: "streak10", description: "lorem ipsum"),
+    (name: "streak50", description: "lorem ipsum"),
+    (name: "streak100", description: "lorem ipsum")
+]

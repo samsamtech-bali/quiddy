@@ -19,7 +19,25 @@ struct OnboardingThree: View {
         ZStack {
             Color(hex: "#0D0D11")
                 .ignoresSafeArea()
-            
+    
+            Button("Continue", action: {
+                Task {
+                    var generatedCode: String
+                    
+                    generatedCode = registerVM.generateRandomUniqueString()
+                    
+                    while await registerVM.isCodeExisted(code: generatedCode) == true {
+                        generatedCode = registerVM.generateRandomUniqueString()
+                    }
+                    
+                    registerVM.quiddyCode = generatedCode
+                    
+                    
+                    router.path.append(Route.ciggerateView)
+                }
+            })
+            .buttonStyle(.bordered)
+
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     if !router.path.isEmpty {
