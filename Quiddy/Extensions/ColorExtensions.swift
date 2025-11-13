@@ -33,3 +33,8 @@ extension Color {
         )
     }
 }
+
+#Preview {
+    OnboardingContainerView()
+        .environmentObject(Router.shared)
+}
