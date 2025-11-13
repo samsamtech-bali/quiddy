@@ -12,7 +12,6 @@ class QuiddyUserModel {
     public var userID: CKRecord.ID?
     public var username: String
     public var quiddyCode: String
-    public var buddyCode: String
     public var stopDate: Date
     public var updatedStopDate: Date
     public var cigPerDay: Int
@@ -20,6 +19,8 @@ class QuiddyUserModel {
     public var dateCravingPressed: [Date]
     public var badges: String
     public var relapseDate: [Date]
+    public var buddyCode: String
+    public var buddyStartDate: Date
     
     func getRecord() -> CKRecord {
         let quiddyUserRecord  = CKRecord(recordType: RecordNames.QuiddyUsers.rawValue, recordID: userID ?? CKRecord(recordType: RecordNames.QuiddyUsers.rawValue, recordID: CKRecord.ID(recordName: UUID().uuidString)).recordID)
@@ -34,7 +35,8 @@ class QuiddyUserModel {
             QuiddyUserFields.dateCravingPressed.rawValue: self.dateCravingPressed,
             QuiddyUserFields.badges.rawValue: self.badges,
             QuiddyUserFields.relapseDate.rawValue: self.relapseDate,
-            QuiddyUserFields.buddyCode.rawValue: self.buddyCode
+            QuiddyUserFields.buddyCode.rawValue: self.buddyCode,
+            QuiddyUserFields.buddyStartDate.rawValue: self.buddyStartDate
         ])
         
         return quiddyUserRecord
@@ -71,9 +73,11 @@ class QuiddyUserModel {
         guard let buddyCode = record[QuiddyUserFields.buddyCode.rawValue] as? String else { return nil }
         self.buddyCode = buddyCode
         
+        guard let buddyStartDate = record[QuiddyUserFields.buddyStartDate.rawValue] as? Date else { return nil }
+        self.buddyStartDate = buddyStartDate
+        
         self.userID = record.recordID
     }
-    
     
     init(
         userID: CKRecord.ID? = nil,
@@ -86,7 +90,8 @@ class QuiddyUserModel {
         dateCravingPressed: [Date],
         badges: String,
         relapseDate: [Date],
-        buddyCode: String
+        buddyCode: String,
+        buddyStartDate: Date
     ) {
         self.userID = userID
         self.username = username
@@ -99,6 +104,7 @@ class QuiddyUserModel {
         self.badges = badges
         self.relapseDate = relapseDate
         self.buddyCode = buddyCode
+        self.buddyStartDate = buddyStartDate
     }
     
 }
@@ -115,4 +121,11 @@ enum QuiddyUserFields: String {
     case badges
     case relapseDate
     case buddyCode
+    case buddyStartDate
+}
+
+enum RecordNames: String {
+    case Badges
+    case QuiddyUsers
+    case BuddyBadge
 }

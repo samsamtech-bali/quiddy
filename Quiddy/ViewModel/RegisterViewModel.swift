@@ -33,7 +33,7 @@ class RegisterViewModel: ObservableObject {
         pricePerCig: Double
     ) async -> QuiddyUserModel? {
         do {
-            print("Running create new user function...")
+            print("Running createNewUser function...")
             
             let currentRecord = try await fetchByRecordName()
             
@@ -46,6 +46,7 @@ class RegisterViewModel: ObservableObject {
                 let emptyString: String = "-"
                 let emptyStringJSON: String = "[]"
                 let emptyDateArr: [Date] = []
+                let emptyDate: Date = Date()
                 print("emptyDateArr: \(emptyDateArr)")
                 
                 let quiddyUser = QuiddyUserModel(
@@ -58,7 +59,8 @@ class RegisterViewModel: ObservableObject {
                     dateCravingPressed: emptyDateArr,
                     badges: emptyStringJSON,
                     relapseDate: emptyDateArr,
-                    buddyCode: emptyString
+                    buddyCode: emptyString,
+                    buddyStartDate: emptyDate
                 )
                 let quiddyUserRecord = quiddyUser.getRecord()
                 let record = try await databasePublic.save(quiddyUserRecord)
@@ -192,7 +194,6 @@ class RegisterViewModel: ObservableObject {
             return true
         }
     }
-    
     
     func calculatePricePerCig(price: Int, days: Int) {
         let newPrice = Double(price/days)

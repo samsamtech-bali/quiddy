@@ -12,6 +12,8 @@ struct QuiddyApp: App {
     @StateObject private var router = Router.shared
     @StateObject private var registerVM = RegisterViewModel()
     @StateObject private var buddyVM = BuddyViewModel()
+    @StateObject private var badgeVM = BadgeViewModel()
+    @StateObject private var buddyBadgeVM = BuddyBadgeViewModel()
     
     var body: some Scene {
         WindowGroup {
@@ -23,6 +25,8 @@ struct QuiddyApp: App {
             BuddyView()
                 .environmentObject(registerVM)
                 .environmentObject(buddyVM)
+                .environmentObject(badgeVM)
+                .environmentObject(buddyBadgeVM)
         }
     }
 }
