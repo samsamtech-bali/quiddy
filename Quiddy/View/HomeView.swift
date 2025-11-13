@@ -103,4 +103,5 @@ struct BadgePreview: View {
 
 #Preview {
     HomeView()
+        .environmentObject(RegisterViewModel())
 }

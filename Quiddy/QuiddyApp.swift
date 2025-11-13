@@ -15,14 +15,8 @@ struct QuiddyApp: App {
     
     var body: some Scene {
         WindowGroup {
-//            ContentView()
-//                .environmentObject(router)
-            
-//            BadgeView()
-                
-            BuddyView()
-                .environmentObject(registerVM)
-                .environmentObject(buddyVM)
+            ContentView()
+                .environmentObject(router)
         }
     }
 }
