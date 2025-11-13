@@ -8,23 +8,43 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject private var registerViewModel: RegisterViewModel
+    
+    private var daysSmokesFree: Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.day], from: registerViewModel.stopDate, to: now)
+        return max(0, components.day ?? 0)
+    }
+    
+    private var moneySaved: Int {
+        let days = daysSmokesFree
+        let dailyCost = Double(registerViewModel.cigPerDay) * registerViewModel.pricePerCig
+        return Int(dailyCost * Double(days))
+    }
+    
+    private func resetSmokeFreeDays() {
+        registerViewModel.stopDate = Date()
+        registerViewModel.updatedStopDate = Date()
+    }
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
             CardView(
-                username: "Jeremy",
-                daysSmokesFree: 25,
-                moneySaved: 40000,
+                username: registerViewModel.username.isEmpty ? "User" : registerViewModel.username,
+                daysSmokesFree: daysSmokesFree,
+                moneySaved: moneySaved,
                 onRefresh: {
-                    // Handle refresh action
+                    resetSmokeFreeDays()
                 }
             )
             .offset(y: 140)
             
             BuddyCardView(
-                username: "Jeremy",
-                daysSmokesFree: 25,
-                moneySaved: 40000
+                username: "Buddy",
+                daysSmokesFree: daysSmokesFree + 2,
+                moneySaved: moneySaved + 5000
             )
             .offset(y: 140)
             

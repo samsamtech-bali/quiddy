@@ -14,48 +14,46 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            
-            Text("IS SIGNED IN: \(cloudKitManager.isSignedInToiCloud)")
-            Text("\(cloudKitManager.error)")
-            
-            Text("Permission Status: \(cloudKitManager.permissionStatus.description.uppercased())")
-            Text("Name: \(cloudKitManager.username)")
-            
-            Button("Start", action: {
-                router.path.append(Route.usernameView)
-            })
-            .navigationDestination(for: Route.self, destination: { route in
-                switch route {
-                case .usernameView:
-                    OnboardingThree()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
-                case .ciggerateView:
-                    OnboardingFour()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
-                case .priceView:
-                    OnboardingFive()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
-                case .successView:
-                    OnboardingSix()
-                        .environmentObject(registerViewModel)
-                default:
-                    OnboardingThree()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
+            // Start with OnboardingContainerView (the first 3 intro screens)
+            OnboardingContainerView()
+                .navigationBarHidden(true)
+                .navigationDestination(for: Route.self) { route in
+                    switch route {
+                    case .onboarding:
+                        OnboardingContainerView()
+                        
+                    case .usernameView:
+                        OnboardingThree()
+                        
+                    case .ciggerateView:
+                        OnboardingFour()
+                        
+                    case .priceView:
+                        OnboardingFive()
+                        
+                    case .thankYouView:
+                        OnboardingThankYou()
+                        
+                    case .costFeedbackView:
+                        OnboardingCostFeedback()
+                        
+                    case .promiseView:
+                        OnboardingSix()
+                        
+                    case .successView:
+                        OnboardingSuccess()
+                        
+                    case .pageOne:
+                        MainTabView()
+                            .environmentObject(registerViewModel)
+                    }
                 }
-            }
-            )
         }
-        .padding()
+        .environmentObject(registerViewModel)
     }
-    
 }
 
 #Preview {
-    
     ContentView()
         .environmentObject(Router.shared)
 }

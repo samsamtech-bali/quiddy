@@ -13,6 +13,9 @@ struct BadgeListView: View {
     let streakBadges = [7, 14, 30, 60, 90, 120]
     let earnedStreakBadges = [7, 14] // Mock data - 7 and 14 day badges earned
     
+    let savingsBadges = [50000, 100000, 200000, 500000, 1000000, 2000000] // Savings milestones in currency units
+    let earnedSavingsBadges = [50000] // Mock data - first milestone earned
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -67,8 +70,12 @@ struct BadgeListView: View {
                                 }
                                 
                                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                                    ForEach(0..<6, id: \.self) { index in
-                                        SquareBadge(isEarned: false)
+                                    ForEach(Array(savingsBadges.enumerated()), id: \.element) { index, amount in
+                                        MoneyBadge(
+                                            amount: amount,
+                                            isEarned: earnedSavingsBadges.contains(amount),
+                                            badgeIndex: index + 1
+                                        )
                                     }
                                 }
                             }
@@ -118,13 +125,25 @@ struct HexagonBadge: View {
     }
 }
 
-struct SquareBadge: View {
+struct MoneyBadge: View {
+    let amount: Int
     let isEarned: Bool
+    let badgeIndex: Int
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color.gray.opacity(0.2))
-            .frame(width: 110, height: 110)
+        ZStack {
+            if isEarned {
+                Image("MoneyBadge\(badgeIndex)")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 110, height: 110)
+            } else {
+                Image("MoneyBadge\(badgeIndex)Locked")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 110, height: 110)
+            }
+        }
     }
 }
 
