@@ -37,7 +37,7 @@ enum CirclePosition {
 
 
 struct BreathingView: View {
-    @State var count: Int = 4
+    @State var count: Int = 1
     @State var state: BreathingState = .breatheIn
     @State var isAnimating: Bool = false
     @State var position1: CGPoint = CirclePosition.circleA
@@ -46,7 +46,7 @@ struct BreathingView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0x12/255, green: 0x14/255, blue: 0x18/255)
+            Color(hex: "121418")
                 .ignoresSafeArea()
             ZStack {
                 LinearGradient(
@@ -150,11 +150,9 @@ struct BreathingView: View {
             guard isAnimating else { return }
             count -= 1
             if count == 0 {
-                count = Int(state.duration)
+                count = 0+1
                 
             }
-            
-            
         }
         
     }
@@ -187,7 +185,6 @@ struct BreathingView: View {
     func startCycle() -> Task<Void, Never> {
         return Task {
             while isAnimating {
-                print("Animation cycle running, state: \(state)")
                 withAnimation(.linear(duration: state.duration)) {
                     updatePosition()
                 }
@@ -195,7 +192,6 @@ struct BreathingView: View {
                 guard isAnimating else {
                     break
                 }
-                print("About to transition from \(state), count is currently: \(count)")
                 transition()
             }
         }
