@@ -5,6 +5,7 @@
 //  Created by stephan on 07/11/25.
 //
 
+
 import SwiftUI
 
 struct OnboardingSix: View {
@@ -62,7 +63,7 @@ struct OnboardingSix: View {
                 Spacer()
                 
                 Button(action: {
-                    // Save user data and navigate to home
+                    // Navigate directly to HomeView
                     router.path.append(Route.pageOne)
                 }) {
                     Text("I promise myself")

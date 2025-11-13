@@ -11,6 +11,10 @@ struct OnboardingThree: View {
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var registerVM: RegisterViewModel
     
+    private var canContinue: Bool {
+        !registerVM.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
     var body: some View {
         ZStack {
             Color(hex: "#0D0D11")
@@ -18,31 +22,36 @@ struct OnboardingThree: View {
             
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Button(action: {
-                        router.path.removeLast()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.white)
-                            .font(.system(size: 20))
+                    if !router.path.isEmpty {
+                        Button(action: {
+                            router.path.removeLast()
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.white)
+                                .font(.system(size: 20))
+                        }
                     }
                     
                     ProgressBar(progress: 1, total: 6)
-                        .padding(.leading, 12)
+                        .padding(.leading, router.path.isEmpty ? 0 : 12)
                     
                     Spacer()
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
                 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(spacing: 8) {
                     Text("Let's get to know your story")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
                     
                     Text("Your answers will help shape the app\naround your needs.")
                         .font(.system(size: 15, weight: .regular))
                         .foregroundColor(Color(hex: "#8E8E93"))
+                        .multilineTextAlignment(.center)
                 }
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 24)
                 .padding(.top, 40)
                 
@@ -85,6 +94,8 @@ struct OnboardingThree: View {
                                 .stroke(Color.white, lineWidth: 1)
                         )
                 }
+                .disabled(!canContinue)
+                .opacity(canContinue ? 1.0 : 0.5)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }
@@ -92,3 +103,4 @@ struct OnboardingThree: View {
         .navigationBarHidden(true)
     }
 }
+

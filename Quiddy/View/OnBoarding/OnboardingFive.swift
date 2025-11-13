@@ -16,6 +16,22 @@ struct OnboardingFive: View {
     @State private var daysPerPackInput: String = ""
     @State private var daysPerPackInt: Int = 0
     
+    private var canContinue: Bool {
+        !pricePerPackInput.isEmpty && pricePerPackInt > 0 && !daysPerPackInput.isEmpty && daysPerPackInt > 0
+    }
+    
+    private func formatCurrency(_ value: String) -> String {
+        let filtered = value.filter { "0123456789".contains($0) }
+        guard let number = Int(filtered), number > 0 else { return "" }
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        formatter.groupingSize = 3
+        
+        return formatter.string(from: NSNumber(value: number)) ?? filtered
+    }
+    
     var body: some View {
         ZStack {
             Color(hex: "#0D0D11")
@@ -31,7 +47,7 @@ struct OnboardingFive: View {
                             .font(.system(size: 20))
                     }
                     
-                    ProgressBar(progress: 3, total: 6)
+                    ProgressBar(progress: 4, total: 6)
                         .padding(.leading, 12)
                     
                     Spacer()
@@ -39,15 +55,18 @@ struct OnboardingFive: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
                 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(spacing: 8) {
                     Text("Let's get to know your story")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
                     
                     Text("Your answers will help shape the app\naround your needs.")
                         .font(.system(size: 15, weight: .regular))
                         .foregroundColor(Color(hex: "#8E8E93"))
+                        .multilineTextAlignment(.center)
                 }
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 24)
                 .padding(.top, 40)
                 
@@ -57,28 +76,33 @@ struct OnboardingFive: View {
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(.white)
                         
-                        TextField("e.g. John", text: $pricePerPackInput)
-                            .keyboardType(.numberPad)
-                            .onChange(of: pricePerPackInput) { newValue in
-                                let filtered = newValue.filter{"0123456789".contains($0)}
-                                if filtered != newValue {
-                                    pricePerPackInput = filtered
+                        HStack(spacing: 8) {
+                            Text("Rp")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundColor(.white)
+                            
+                            TextField("25,000", text: $pricePerPackInput)
+                                .keyboardType(.numberPad)
+                                .onChange(of: pricePerPackInput) { newValue in
+                                    let filtered = newValue.filter{"0123456789".contains($0)}
+                                    
+                                    if let newInt = Int(filtered) {
+                                        pricePerPackInt = newInt
+                                        pricePerPackInput = formatCurrency(filtered)
+                                    } else if filtered.isEmpty {
+                                        pricePerPackInt = 0
+                                        pricePerPackInput = ""
+                                    }
                                 }
-                                
-                                if let newInt = Int(filtered) {
-                                    pricePerPackInt = newInt
-                                } else if filtered.isEmpty {
-                                    pricePerPackInt = 0
-                                }
-                            }
-                            .font(.system(size: 17))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.clear)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color(hex: "#3A3A3C"), lineWidth: 1)
-                            )
+                                .font(.system(size: 17))
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.clear)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(hex: "#3A3A3C"), lineWidth: 1)
+                                )
+                        }
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
@@ -86,28 +110,35 @@ struct OnboardingFive: View {
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(.white)
                         
-                        TextField("e.g. John", text: $daysPerPackInput)
-                            .keyboardType(.numberPad)
-                            .onChange(of: daysPerPackInput) { newValue in
-                                let filtered = newValue.filter{"0123456789".contains($0)}
-                                if filtered != newValue {
-                                    daysPerPackInput = filtered
+                        HStack(spacing: 12) {
+                            TextField("2", text: $daysPerPackInput)
+                                .keyboardType(.numberPad)
+                                .onChange(of: daysPerPackInput) { newValue in
+                                    let filtered = newValue.filter{"0123456789".contains($0)}
+                                    if filtered != newValue {
+                                        daysPerPackInput = filtered
+                                    }
+                                    
+                                    if let newInt = Int(filtered) {
+                                        daysPerPackInt = newInt
+                                    } else if filtered.isEmpty {
+                                        daysPerPackInt = 0
+                                    }
                                 }
-                                
-                                if let newInt = Int(filtered) {
-                                    daysPerPackInt = newInt
-                                } else if filtered.isEmpty {
-                                    daysPerPackInt = 0
-                                }
-                            }
-                            .font(.system(size: 17))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.clear)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color(hex: "#3A3A3C"), lineWidth: 1)
-                            )
+                                .font(.system(size: 17))
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.clear)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(hex: "#3A3A3C"), lineWidth: 1)
+                                )
+                                .frame(width: 100)
+                            
+                            Text("Days")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundColor(.white)
+                        }
                     }
                 }
                 .padding(.horizontal, 24)
@@ -117,7 +148,7 @@ struct OnboardingFive: View {
                 
                 Button(action: {
                     registerVM.calculatePricePerCig(price: pricePerPackInt, days: daysPerPackInt)
-                    router.path.append(Route.thankYouView)
+                    router.path.append(Route.costFeedbackView)
                 }) {
                     Text("Continue")
                         .font(.system(size: 17, weight: .medium))
@@ -129,6 +160,8 @@ struct OnboardingFive: View {
                                 .stroke(Color.white, lineWidth: 1)
                         )
                 }
+                .disabled(!canContinue)
+                .opacity(canContinue ? 1.0 : 0.5)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }
@@ -136,3 +169,4 @@ struct OnboardingFive: View {
         .navigationBarHidden(true)
     }
 }
+

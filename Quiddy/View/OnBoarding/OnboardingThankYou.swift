@@ -25,7 +25,7 @@ struct OnboardingThankYou: View {
                             .font(.system(size: 20))
                     }
                     
-                    ProgressBar(progress: 4, total: 6)
+                    ProgressBar(progress: 3, total: 6)
                         .padding(.leading, 12)
                     
                     Spacer()
@@ -46,8 +46,8 @@ struct OnboardingThankYou: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                router.path.append(Route.costFeedbackView)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                router.path.append(Route.priceView)
             }
         }
     }
