@@ -30,7 +30,7 @@ struct OnboardingSuccess: View {
                     .foregroundColor(Color(hex: "#8E8E93"))
                 
                 Button(action: {
-                    router.navigateToHome()
+                    router.path.append(Route.pageOne)
                 }) {
                     Text("Get Started")
                         .font(.system(size: 17, weight: .medium))

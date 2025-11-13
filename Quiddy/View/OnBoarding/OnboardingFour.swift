@@ -14,6 +14,10 @@ struct OnboardingFour: View {
     @State private var stopDate: Date = Date.now
     @State private var smokePerDayInput: String = ""
     
+    private var canContinue: Bool {
+        !smokePerDayInput.isEmpty && registerVM.cigPerDay > 0
+    }
+    
     var body: some View {
         ZStack {
             Color(hex: "#0D0D11")
@@ -37,15 +41,18 @@ struct OnboardingFour: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
                 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(spacing: 8) {
                     Text("Let's get to know your story")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
                     
                     Text("Your answers will help shape the app\naround your needs.")
                         .font(.system(size: 15, weight: .regular))
                         .foregroundColor(Color(hex: "#8E8E93"))
+                        .multilineTextAlignment(.center)
                 }
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 24)
                 .padding(.top, 40)
                 
@@ -61,10 +68,6 @@ struct OnboardingFour: View {
                             .colorScheme(.dark)
                             .padding()
                             .background(Color.clear)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color(hex: "#3A3A3C"), lineWidth: 1)
-                            )
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
@@ -72,7 +75,7 @@ struct OnboardingFour: View {
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(.white)
                         
-                        TextField("e.g. John", text: $smokePerDayInput)
+                        TextField("e.g. 10", text: $smokePerDayInput)
                             .keyboardType(.numberPad)
                             .onChange(of: smokePerDayInput) { newValue in
                                 let filtered = newValue.filter{"0123456789".contains($0)}
@@ -104,7 +107,7 @@ struct OnboardingFour: View {
                 Button(action: {
                     registerVM.stopDate = stopDate
                     registerVM.updatedStopDate = stopDate
-                    router.path.append(Route.priceView)
+                    router.path.append(Route.thankYouView)
                 }) {
                     Text("Continue")
                         .font(.system(size: 17, weight: .medium))
@@ -116,6 +119,8 @@ struct OnboardingFour: View {
                                 .stroke(Color.white, lineWidth: 1)
                         )
                 }
+                .disabled(!canContinue)
+                .opacity(canContinue ? 1.0 : 0.5)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }

@@ -32,8 +32,8 @@ struct OnboardingTwoPointFive: View {
                         .offset(x: -circleOffset)
                 }
                 .onAppear {
-                    withAnimation(.easeOut(duration: 1.5)) {
-                        circleOffset = 10
+                    withAnimation(.easeOut(duration: 3.0)) {
+                        circleOffset = 15
                     }
                 }
                 
