@@ -39,7 +39,7 @@ struct OnboardingOne: View {
                         .padding(.bottom, 24)
                     
                     Button(action: {
-                        withAnimation {
+                        withAnimation(.easeInOut(duration: 0.3)) {
                             currentPage = 1
                         }
                     }) {

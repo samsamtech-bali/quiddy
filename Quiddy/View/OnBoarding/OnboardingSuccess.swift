@@ -30,6 +30,7 @@ struct OnboardingSuccess: View {
                     .foregroundColor(Color(hex: "#8E8E93"))
                 
                 Button(action: {
+                    // Navigate directly to HomeView
                     router.path.append(Route.pageOne)
                 }) {
                     Text("Get Started")
@@ -49,3 +50,4 @@ struct OnboardingSuccess: View {
         .navigationBarHidden(true)
     }
 }
+

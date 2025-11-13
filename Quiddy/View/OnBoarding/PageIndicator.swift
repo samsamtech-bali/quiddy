@@ -18,6 +18,7 @@ struct PageIndicator: View {
                 Circle()
                     .fill(index == currentPage ? Color.white : Color(hex: "#3A3A3C"))
                     .frame(width: 8, height: 8)
+                    .animation(.easeInOut(duration: 0.3), value: currentPage)
             }
         }
     }
@@ -27,3 +28,4 @@ struct PageIndicator: View {
     PageIndicator(currentPage: 1, totalPages: 3)
         .background(Color.black)
 }
+

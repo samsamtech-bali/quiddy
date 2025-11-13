@@ -28,18 +28,23 @@ struct OnboardingContainerView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             
+            // Skip button only on first screen
             VStack {
                 HStack {
                     Spacer()
-                    Button("Skip") {
-                        router.path.append(Route.usernameView)
+                    if currentPage == 0 {
+                        Button("Skip") {
+                            router.path.append(Route.usernameView)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.trailing, 24)
+                        .padding(.top, 8)
+                        .transition(.opacity)
                     }
-                    .foregroundColor(.white)
-                    .padding(.trailing, 24)
-                    .padding(.top, 8)
                 }
                 Spacer()
             }
+            .animation(.easeInOut(duration: 0.3), value: currentPage)
         }
     }
 }
