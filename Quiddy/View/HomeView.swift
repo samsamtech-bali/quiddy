@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var registerViewModel: RegisterViewModel
+    @State private var showingInviteView = false
     
     private var daysSmokesFree: Int {
         let calendar = Calendar.current
@@ -42,9 +43,13 @@ struct HomeView: View {
             .offset(y: 140)
             
             BuddyCardView(
+                hasBuddy: false, // TODO: Connect to actual buddy state
                 username: "Buddy",
                 daysSmokesFree: daysSmokesFree + 2,
-                moneySaved: moneySaved + 5000
+                moneySaved: moneySaved + 5000,
+                onAddBuddyTap: {
+                    showingInviteView = true
+                }
             )
             .offset(y: 140)
             
@@ -85,6 +90,10 @@ struct HomeView: View {
         .ignoresSafeArea()
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showingInviteView) {
+            InviteView()
+                .environmentObject(registerViewModel)
+        }
     }
         
 }
