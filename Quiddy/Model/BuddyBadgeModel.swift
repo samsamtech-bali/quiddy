@@ -14,6 +14,7 @@ class BuddyBadgeModel {
     public var userB: String
     public var badgeType: String
     public var badgeName: String
+    public var badgeThreshold: Int
     public var obtainedDate: Date
     
     func getRecord() -> CKRecord {
@@ -24,6 +25,7 @@ class BuddyBadgeModel {
             BuddyBadgeFields.userB.rawValue: self.userB,
             BuddyBadgeFields.badgeType.rawValue: self.badgeType,
             BuddyBadgeFields.badgeName.rawValue: self.badgeName,
+            BuddyBadgeFields.badgeThreshold.rawValue: self.badgeThreshold,
             BuddyBadgeFields.obtainedDate.rawValue: self.obtainedDate
         ])
         
@@ -43,6 +45,9 @@ class BuddyBadgeModel {
         guard let badgeName = record[BuddyBadgeFields.badgeName.rawValue] as? String else { return nil }
         self.badgeName = badgeName
         
+        guard let badgeThreshold = record[BuddyBadgeFields.badgeThreshold.rawValue] as? Int else { return nil }
+        self.badgeThreshold = badgeThreshold
+        
         guard let obtainedDate = record[BuddyBadgeFields.obtainedDate.rawValue] as? Date else { return nil }
         self.obtainedDate = obtainedDate
         
@@ -55,6 +60,7 @@ class BuddyBadgeModel {
         userB: String,
         badgeType: String,
         badgeName: String,
+        badgeThreshold: Int,
         obtainedDate: Date
     ) {
         self.buddyBadgeID = buddyBadgeID
@@ -62,6 +68,7 @@ class BuddyBadgeModel {
         self.userB = userB
         self.badgeType = badgeType
         self.badgeName = badgeName
+        self.badgeThreshold = badgeThreshold
         self.obtainedDate = obtainedDate
     }
 }
@@ -72,5 +79,6 @@ enum BuddyBadgeFields: String {
     case userB
     case badgeType
     case badgeName
+    case badgeThreshold
     case obtainedDate
 }

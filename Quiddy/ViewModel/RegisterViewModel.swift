@@ -113,7 +113,6 @@ class RegisterViewModel: ObservableObject {
                     print("cigPerDay: \(String(describing: result?.cigPerDay))")
                 case .failure(let error):
                     print("Error recordMatchedBlock for returnID \(returnedID): \(error)")
-                    
                 }
                 
             }

@@ -95,6 +95,14 @@ struct BuddyView: View {
                         print("days: \(days)")
                     })
                     
+                    Button("compare user", action: {
+                        guard let userRecord = self.userRecord else { return }
+                        guard let buddyRecord = self.buddyRecord else { return }
+                        
+                        let users = buddyBadgeVM.compareUser(userRecordName: userRecord.getRecord().recordID.recordName, buddyRecordName: buddyRecord.getRecord().recordID.recordName)
+                        print("userA in view: \(users.userA)")
+                        print("userB in view: \(users.userB)")
+                    })
                     
                 }
                 .padding()
@@ -187,6 +195,12 @@ struct BuddyView: View {
                     combinedFreeSmokeDays = buddyBadgeVM.calculateSharedStreak(since: record.buddyStartDate)
                     
                     combinedMoneySaved = buddyBadgeVM.calculateSharedMoneySaved(userRecord: record, buddyRecord: buddyRecord)
+                    
+                    await buddyBadgeVM.checkAchievedBadges(streak: combinedFreeSmokeDays, moneySaved: combinedMoneySaved, userRecord: record.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID)
+                    
+                    let badgeByStreakType = try await buddyBadgeVM.fetchAllBadgesByType(userRecordName: record.getRecord().recordID.recordName, badgeType: BadgeType.streak.rawValue)
+                    
+                    print("badgeByStreakType: \(badgeByStreakType)")
                 }
             }
             
