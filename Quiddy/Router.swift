@@ -9,7 +9,9 @@ import Foundation
 import SwiftUI
 
 enum Route: Hashable {
-    case onboarding           // Initial onboarding container
+    case intro1               // NEW: Welcome screen
+    case intro2               // NEW: Hard to quit screen
+    case intro3               // NEW: Together screen
     case usernameView         // OnboardingThree
     case ciggerateView        // OnboardingFour
     case thankYouView         // Thank you screen
@@ -38,4 +40,3 @@ final class Router: ObservableObject {
         path.append(Route.pageOne)
     }
 }
-

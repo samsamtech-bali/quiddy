@@ -51,3 +51,6 @@ struct OnboardingSuccess: View {
     }
 }
 
+#Preview {
+    OnboardingSuccess()
+}

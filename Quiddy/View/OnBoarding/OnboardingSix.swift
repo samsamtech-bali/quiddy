@@ -63,7 +63,7 @@ struct OnboardingSix: View {
                 Spacer()
                 
                 Button(action: {
-                    // Navigate directly to HomeView
+                    // Navigate directly to Home View
                     router.path.append(Route.pageOne)
                 }) {
                     Text("I promise myself")
