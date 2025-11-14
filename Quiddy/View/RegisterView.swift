@@ -29,6 +29,7 @@ struct RegisterView: View {
         
         
     }
+        
 }
 
 #Preview {

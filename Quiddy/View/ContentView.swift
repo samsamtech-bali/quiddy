@@ -9,19 +9,42 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var router: Router
-    @StateObject private var registerViewModel = RegisterViewModel()
-//    @StateObject private var cloudKitManager = CloudKitManager()
+    @EnvironmentObject private var registerVM: RegisterViewModel
+    
+    @State private var hasAccount: Bool = false
     
     var body: some View {
-        NavigationStack(path: $router.path) {
-            // Start with intro flow container
-            IntroFlowContainer()
-                .navigationBarHidden(true)
-                .navigationDestination(for: Route.self) { route in
-                    destinationView(for: route)
+        Group {
+            if hasAccount {
+                MainTabView()
+            } else {
+                NavigationStack(path: $router.path) {
+                    // Start with intro flow container
+                    IntroFlowContainer()
+                        .navigationBarHidden(true)
+                        .navigationDestination(for: Route.self) { route in
+                            destinationView(for: route)
+                        }
                 }
+            }
         }
-        .environmentObject(registerViewModel)
+        .onAppear {
+            Task {
+                let currentRecord = try await registerVM.fetchByRecordName()
+                
+                print("current record: \(String(describing: currentRecord))")
+                
+                if currentRecord != nil {
+                    print("user already has data...")
+                    hasAccount = true
+                    print("has account: \(hasAccount)")
+                } else {
+                    hasAccount = false
+                    print("has account: \(hasAccount)")
+                }
+            }
+        }
+        
     }
     
     @ViewBuilder
@@ -49,4 +72,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(Router.shared)
+        .environmentObject(RegisterViewModel())
 }

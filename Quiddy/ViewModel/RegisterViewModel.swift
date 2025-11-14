@@ -15,6 +15,7 @@ class RegisterViewModel: ObservableObject {
     @Published var updatedStopDate: Date = Date.now
     @Published var cigPerDay: Int = 0
     @Published var pricePerCig: Double = 0
+    @Published var hasAccount: Bool = false
     
     let container: CKContainer
     let databasePublic: CKDatabase

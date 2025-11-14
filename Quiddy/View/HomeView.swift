@@ -10,38 +10,24 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var registerViewModel: RegisterViewModel
     @EnvironmentObject private var badgeVM: BadgeViewModel
+    @EnvironmentObject private var buddyBadgeVM: BuddyBadgeViewModel
+    
     @State private var showingInviteView = false
-    @State private var userRecord: QuiddyUserModel?
-    @State private var buddyRecord: QuiddyUserModel?
     @State private var hasBuddy = false
     
-    private var daysSmokesFree: Int {
-        let calendar = Calendar.current
-        let now = Date()
-        let components = calendar.dateComponents([.day], from: registerViewModel.stopDate, to: now)
-        return max(0, components.day ?? 0)
-    }
+    @State private var userRecord: QuiddyUserModel?
+    @State private var buddyRecord: QuiddyUserModel?
     
-    private var moneySaved: Int {
-        let days = daysSmokesFree
-        let dailyCost = Double(registerViewModel.cigPerDay) * registerViewModel.pricePerCig
-        return Int(dailyCost * Double(days))
-    }
+    @State var userFreeSmokeDays: Int = 0
+    @State var userMoneySaved: Int = 0
     
-    private var buddyDaysSmokesFree: Int {
-        guard let buddyRecord = buddyRecord else { return 0 }
-        return badgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
-    }
+    @State var buddyFreeSmokeDays: Int = 0
+    @State var buddyMoneySaved: Int = 0
     
-    private var buddyMoneySaved: Int {
-        guard let buddyRecord = buddyRecord else { return 0 }
-        return badgeVM.calculateMoneySaved(record: buddyRecord)
-    }
+    @State var combinedFreeSmokeDays: Int = 0
+    @State var combinedMoneySaved: Int = 0
     
-    private func resetSmokeFreeDays() {
-        registerViewModel.stopDate = Date()
-        registerViewModel.updatedStopDate = Date()
-    }
+    
     
     private func loadUserAndBuddyData() {
         Task {
@@ -50,18 +36,33 @@ struct HomeView: View {
                 let record = try await registerViewModel.fetchByRecordName()
                 self.userRecord = record
                 
-                // Check if user has a buddy
-                if let record = record,
-                   !record.buddyCode.isEmpty && record.buddyCode != "-" {
+                guard let record = self.userRecord else { return }
+                
+                userFreeSmokeDays = badgeVM.daysSmokesFree(record.updatedStopDate)
+                userMoneySaved = badgeVM.calculateMoneySaved(record: record)
+                
+                if !record.buddyCode.isEmpty && record.buddyCode != "-" {
                     self.hasBuddy = true
                     
-                    // Load buddy data
-                    let buddy = try await registerViewModel.fetchByUniqueCode(record.buddyCode)
-                    self.buddyRecord = buddy
-                } else {
+                    let buddyRecord = try await registerViewModel.fetchByUniqueCode(record.buddyCode)
+                    self.buddyRecord = buddyRecord
+                    
+                    guard let buddyRecord = self.buddyRecord else { return }
+                    buddyFreeSmokeDays = badgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
+                    buddyMoneySaved = badgeVM.calculateMoneySaved(record: buddyRecord)
+                    
+                    combinedFreeSmokeDays = buddyBadgeVM.calculateSharedStreak(since: record.buddyStartDate)
+                    
+                    combinedMoneySaved = buddyBadgeVM.calculateSharedMoneySaved(userRecord: record, buddyRecord: buddyRecord)
+                    
+                    await buddyBadgeVM.checkAchievedBadges(streak: combinedFreeSmokeDays, moneySaved: combinedMoneySaved, userRecord: record.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID)
+                }
+                else {
                     self.hasBuddy = false
                     self.buddyRecord = nil
                 }
+                
+                
             } catch {
                 print("Error loading user/buddy data: \(error)")
                 self.hasBuddy = false
@@ -74,11 +75,17 @@ struct HomeView: View {
         NavigationView {
             VStack(spacing: 20) {
             CardView(
-                username: registerViewModel.username.isEmpty ? "User" : registerViewModel.username,
-                daysSmokesFree: daysSmokesFree,
-                moneySaved: moneySaved,
+                username: userRecord?.username ?? "no data",
+                daysSmokesFree: userFreeSmokeDays,
+                moneySaved: userMoneySaved,
                 onRefresh: {
-                    resetSmokeFreeDays()
+                    Task {
+                        guard let userRecord = self.userRecord else { return }
+                        guard let buddyRecord = self.buddyRecord else { return }
+                        
+                        await badgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
+
+                    }
                 }
             )
             .offset(y: 140)
@@ -86,8 +93,8 @@ struct HomeView: View {
             BuddyCardView(
                 hasBuddy: hasBuddy,
                 username: buddyRecord?.username ?? "Find a buddy",
-                daysSmokesFree: hasBuddy ? buddyDaysSmokesFree : nil,
-                moneySaved: hasBuddy ? buddyMoneySaved : nil,
+                daysSmokesFree: buddyFreeSmokeDays,
+                moneySaved:buddyMoneySaved,
                 onAddBuddyTap: {
                     showingInviteView = true
                 }

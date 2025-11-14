@@ -23,6 +23,9 @@ struct QuiddyApp: App {
                 .environmentObject(buddyVM)
                 .environmentObject(badgeVM)
                 .environmentObject(buddyBadgeVM)
+            
+            
         }
+        
     }
 }

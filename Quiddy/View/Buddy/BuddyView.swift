@@ -238,5 +238,9 @@ struct BuddyView: View {
             buddyStartDate: Date()
         )
     )
+    .environmentObject(RegisterViewModel())
+    .environmentObject(BuddyViewModel())
+    .environmentObject(BadgeViewModel())
+    .environmentObject(BuddyBadgeViewModel())
 }
 

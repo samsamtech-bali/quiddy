@@ -142,6 +142,14 @@ struct OnboardingFlowContainer: View {
         case 5:
             // Save user data to CloudKit before navigating to main app
             Task {
+                print("=== DATA ===")
+                print("username: \(registerVM.username)")
+                print("quiddyCode: \(registerVM.quiddyCode)")
+                print("stopDate: \(registerVM.stopDate)")
+                print("updatedStopDate: \(registerVM.updatedStopDate)")
+                print("cigPerDay: \(registerVM.cigPerDay)")
+                print("pricePerCig: \(registerVM.pricePerCig)")
+                
                 await registerVM.createNewUser(
                     username: registerVM.username,
                     quiddyCode: registerVM.quiddyCode,
