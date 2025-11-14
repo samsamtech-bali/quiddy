@@ -2,7 +2,7 @@
 //  QuiddyApp.swift
 //  Quiddy
 //
-//  Created by stephan on 05/11/25.
+//  Updated by Kelvin on 12/11/25.
 //
 
 import SwiftUI
@@ -17,16 +17,15 @@ struct QuiddyApp: App {
     
     var body: some Scene {
         WindowGroup {
-//            ContentView()
-//                .environmentObject(router)
-            
-//            BadgeView()
-                
-            BuddyView()
+            ContentView()
+                .environmentObject(router)
                 .environmentObject(registerVM)
                 .environmentObject(buddyVM)
                 .environmentObject(badgeVM)
                 .environmentObject(buddyBadgeVM)
+            
+            
         }
+        
     }
 }

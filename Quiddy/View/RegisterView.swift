@@ -27,11 +27,9 @@ struct RegisterView: View {
         }
         .padding()
         
-            
-            
-        
         
     }
+        
 }
 
 #Preview {

@@ -15,6 +15,7 @@ class RegisterViewModel: ObservableObject {
     @Published var updatedStopDate: Date = Date.now
     @Published var cigPerDay: Int = 0
     @Published var pricePerCig: Double = 0
+    @Published var hasAccount: Bool = false
     
     let container: CKContainer
     let databasePublic: CKDatabase
@@ -200,14 +201,4 @@ class RegisterViewModel: ObservableObject {
         
         self.pricePerCig = newPrice
     }
-    
-    
-    
-    
-    //    func generateUserCode() -> String {
-    //        let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    //        let result = String((0...6).map{_ in letters.randomElement()!})
-    //        print("Random String: \(result)")
-    //        return result
-    //    }
 }
