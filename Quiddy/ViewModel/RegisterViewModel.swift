@@ -201,14 +201,4 @@ class RegisterViewModel: ObservableObject {
         
         self.pricePerCig = newPrice
     }
-    
-    
-    
-    
-    //    func generateUserCode() -> String {
-    //        let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    //        let result = String((0...6).map{_ in letters.randomElement()!})
-    //        print("Random String: \(result)")
-    //        return result
-    //    }
 }

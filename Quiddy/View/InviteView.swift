@@ -10,11 +10,13 @@ import SwiftUI
 struct InviteView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var registerVM: RegisterViewModel
+    @EnvironmentObject private var buddyVM: BuddyViewModel
     @State private var buddyCode: String = ""
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var isLoading = false
     @State private var showCopyFeedback = false
+    @State private var userRecord: QuiddyUserModel?
     
     var body: some View {
         ZStack {
@@ -164,6 +166,16 @@ struct InviteView: View {
         .alert(alertMessage, isPresented: $showingAlert) {
             Button("OK", role: .cancel) {}
         }
+        .onAppear {
+            Task {
+                do {
+                    userRecord = try await registerVM.fetchByRecordName()
+                    print("User record loaded: \(String(describing: userRecord?.username))")
+                } catch {
+                    print("Failed to load user record: \(error)")
+                }
+            }
+        }
     }
     
     private func connectToBuddy() {
@@ -172,26 +184,71 @@ struct InviteView: View {
         isLoading = true
         Task {
             do {
-                // Check if the code exists
+                print("Submiting buddy code: \(buddyCode)")
+                
+                // Get current user record if not already loaded
+                if userRecord == nil {
+                    userRecord = try await registerVM.fetchByRecordName()
+                }
+                
+                guard let userRecord = self.userRecord else {
+                    await MainActor.run {
+                        isLoading = false
+                        alertMessage = "Unable to load your profile. Please try again."
+                        showingAlert = true
+                    }
+                    return
+                }
+                
+                // Check if user is trying to add themselves
+                if userRecord.quiddyCode == buddyCode {
+                    await MainActor.run {
+                        isLoading = false
+                        alertMessage = "You cannot add yourself as a buddy."
+                        showingAlert = true
+                    }
+                    return
+                }
+                
+                // Check if code exists
                 let codeExists = await registerVM.isCodeExisted(code: buddyCode)
+                print("Code exist: \(codeExists)")
                 
                 await MainActor.run {
                     isLoading = false
-                    if codeExists {
-                        // TODO: Integrate with BuddyViewModel to create connection
-                        alertMessage = "Buddy connection feature ready! Code validated."
+                    
+                    if codeExists == false {
+                        print("=== enter false state ===")
+                        alertMessage = "There is no user with this code."
                         showingAlert = true
-                        // Reset the input
-                        buddyCode = ""
                     } else {
-                        alertMessage = "Invalid buddy code. Please check and try again."
-                        showingAlert = true
+                        print("=== enter true state ===")
+                        // Create buddy connection
+                        Task {
+                            await buddyVM.updateBuddyCode(
+                                userRecord,
+                                userCode: userRecord.quiddyCode,
+                                buddyCode: buddyCode
+                            )
+                            
+                            await MainActor.run {
+                                alertMessage = "Successfully connected to your buddy!"
+                                showingAlert = true
+                                buddyCode = ""
+                                
+                                // Dismiss view after successful connection
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    dismiss()
+                                }
+                            }
+                        }
                     }
                 }
             } catch {
+                print("Error in connectToBuddy: \(error)")
                 await MainActor.run {
                     isLoading = false
-                    alertMessage = "Connection failed. Please try again."
+                    alertMessage = "Connection failed. Please check your network and try again."
                     showingAlert = true
                 }
             }
@@ -226,4 +283,5 @@ struct InviteView: View {
 #Preview {
     InviteView()
         .environmentObject(RegisterViewModel())
+        .environmentObject(BuddyViewModel())
 }

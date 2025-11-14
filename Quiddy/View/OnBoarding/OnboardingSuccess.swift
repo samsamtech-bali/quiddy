@@ -55,4 +55,3 @@ struct OnboardingSuccess: View {
     OnboardingSuccess()
         .environmentObject(Router.shared)
 }
-

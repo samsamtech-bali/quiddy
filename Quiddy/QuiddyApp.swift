@@ -19,6 +19,10 @@ struct QuiddyApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(router)
+                .environmentObject(registerVM)
+                .environmentObject(buddyVM)
+                .environmentObject(badgeVM)
+                .environmentObject(buddyBadgeVM)
         }
     }
 }

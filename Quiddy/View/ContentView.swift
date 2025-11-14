@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Quiddy
 //
-//  Created by stephan on 05/11/25.
+//  REFACTORED by Kelvin on 14/11/25.
 //
 
 import SwiftUI
@@ -10,12 +10,12 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var registerViewModel = RegisterViewModel()
-    @StateObject private var cloudKitManager = CloudKitManager()
+//    @StateObject private var cloudKitManager = CloudKitManager()
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            // Start with OnboardingContainerView (the first 3 intro screens)
-            OnboardingContainerView()
+            // Start with intro flow container
+            IntroFlowContainer()
                 .navigationBarHidden(true)
                 .navigationDestination(for: Route.self) { route in
                     destinationView(for: route)
@@ -26,33 +26,22 @@ struct ContentView: View {
     
     @ViewBuilder
     private func destinationView(for route: Route) -> some View {
-        switch route {
-        case .onboarding:
-            OnboardingContainerView()
-            
-        case .usernameView:
-            OnboardingThree()
-            
-        case .ciggerateView:
-            OnboardingFour()
-            
-        case .priceView:
-            OnboardingFive()
-            
-        case .thankYouView:
-            OnboardingThankYou()
-            
-        case .costFeedbackView:
-            OnboardingCostFeedback()
-            
-        case .promiseView:
-            OnboardingSix()
-            
-        case .successView:
-            OnboardingSuccess()
-            
-        case .pageOne:
-            MainTabView()
+        Group {
+            switch route {
+            case .intro1, .intro2, .intro3:
+                // These are handled by IntroFlowContainer
+                IntroFlowContainer()
+                
+            case .usernameView, .ciggerateView, .thankYouView, .priceView, .costFeedbackView, .promiseView:
+                // All onboarding handled by OnboardingFlowContainer
+                OnboardingFlowContainer()
+                
+            case .successView:
+                OnboardingSuccess()
+                
+            case .pageOne:
+                MainTabView()
+            }
         }
     }
 }

@@ -9,7 +9,11 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var registerViewModel: RegisterViewModel
+    @EnvironmentObject private var badgeVM: BadgeViewModel
     @State private var showingInviteView = false
+    @State private var userRecord: QuiddyUserModel?
+    @State private var buddyRecord: QuiddyUserModel?
+    @State private var hasBuddy = false
     
     private var daysSmokesFree: Int {
         let calendar = Calendar.current
@@ -24,9 +28,46 @@ struct HomeView: View {
         return Int(dailyCost * Double(days))
     }
     
+    private var buddyDaysSmokesFree: Int {
+        guard let buddyRecord = buddyRecord else { return 0 }
+        return badgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
+    }
+    
+    private var buddyMoneySaved: Int {
+        guard let buddyRecord = buddyRecord else { return 0 }
+        return badgeVM.calculateMoneySaved(record: buddyRecord)
+    }
+    
     private func resetSmokeFreeDays() {
         registerViewModel.stopDate = Date()
         registerViewModel.updatedStopDate = Date()
+    }
+    
+    private func loadUserAndBuddyData() {
+        Task {
+            do {
+                // Load user record
+                let record = try await registerViewModel.fetchByRecordName()
+                self.userRecord = record
+                
+                // Check if user has a buddy
+                if let record = record,
+                   !record.buddyCode.isEmpty && record.buddyCode != "-" {
+                    self.hasBuddy = true
+                    
+                    // Load buddy data
+                    let buddy = try await registerViewModel.fetchByUniqueCode(record.buddyCode)
+                    self.buddyRecord = buddy
+                } else {
+                    self.hasBuddy = false
+                    self.buddyRecord = nil
+                }
+            } catch {
+                print("Error loading user/buddy data: \(error)")
+                self.hasBuddy = false
+                self.buddyRecord = nil
+            }
+        }
     }
     
     var body: some View {
@@ -43,10 +84,10 @@ struct HomeView: View {
             .offset(y: 140)
             
             BuddyCardView(
-                hasBuddy: false, // TODO: Connect to actual buddy state
-                username: "Buddy",
-                daysSmokesFree: daysSmokesFree + 2,
-                moneySaved: moneySaved + 5000,
+                hasBuddy: hasBuddy,
+                username: buddyRecord?.username ?? "Find a buddy",
+                daysSmokesFree: hasBuddy ? buddyDaysSmokesFree : nil,
+                moneySaved: hasBuddy ? buddyMoneySaved : nil,
                 onAddBuddyTap: {
                     showingInviteView = true
                 }
@@ -94,6 +135,15 @@ struct HomeView: View {
             InviteView()
                 .environmentObject(registerViewModel)
         }
+        .onAppear {
+            loadUserAndBuddyData()
+        }
+        .onChange(of: showingInviteView) { _ in
+            if !showingInviteView {
+                // Refresh data when returning from invite view
+                loadUserAndBuddyData()
+            }
+        }
     }
         
 }
@@ -113,4 +163,5 @@ struct BadgePreview: View {
 #Preview {
     HomeView()
         .environmentObject(RegisterViewModel())
+        .environmentObject(BadgeViewModel())
 }
