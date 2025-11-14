@@ -170,3 +170,9 @@ struct OnboardingFive: View {
     }
 }
 
+#Preview {
+    OnboardingFive()
+        .environmentObject(Router.shared)
+        .environmentObject(RegisterViewModel())
+}
+

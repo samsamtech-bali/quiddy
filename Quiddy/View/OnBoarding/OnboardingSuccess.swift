@@ -51,3 +51,8 @@ struct OnboardingSuccess: View {
     }
 }
 
+#Preview {
+    OnboardingSuccess()
+        .environmentObject(Router.shared)
+}
+

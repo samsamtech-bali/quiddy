@@ -16,7 +16,7 @@ struct MainTabView: View {
                     Text("Home")
                 }
             
-            BreathingExerciseView()
+            BreathingView()
                 .tabItem {
                     Image("breathe-active")
                     Text("Breathing")
@@ -29,4 +29,5 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
+        .environmentObject(RegisterViewModel())
 }

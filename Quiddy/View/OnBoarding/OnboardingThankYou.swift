@@ -53,3 +53,8 @@ struct OnboardingThankYou: View {
     }
 }
 
+#Preview {
+    OnboardingThankYou()
+        .environmentObject(Router.shared)
+}
+

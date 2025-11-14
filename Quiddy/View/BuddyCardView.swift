@@ -36,20 +36,20 @@ struct BuddyCardView: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 15)
                 
-                HStack(spacing: 60) {
+                HStack(spacing: 50) {
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "clock")
+                        HStack(spacing: 6) {
+                            Image(systemName: "bag")
                                 .font(.system(size: 20))
                                 .foregroundColor(.white.opacity(0.7))
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("\(daysSmokesFree) days")
-                                    .font(.title2)
+                                Text("Rp\(moneySaved.formatted())")
+                                    .font(.title3)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.white)
                                 
-                                Text("smoke-free")
+                                Text("money saved")
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.8))
                             }
@@ -57,18 +57,18 @@ struct BuddyCardView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "bag")
+                        HStack(spacing: 6) {
+                            Image(systemName: "clock")
                                 .font(.system(size: 20))
                                 .foregroundColor(.white.opacity(0.7))
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Rp\(moneySaved.formatted())")
-                                    .font(.title2)
+                                Text("\(daysSmokesFree) days")
+                                    .font(.title3)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.white)
                                 
-                                Text("money saved")
+                                Text("smoke-free")
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.8))
                             }

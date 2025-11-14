@@ -128,3 +128,9 @@ struct OnboardingFour: View {
         .navigationBarHidden(true)
     }
 }
+
+#Preview {
+    OnboardingFour()
+        .environmentObject(Router.shared)
+        .environmentObject(RegisterViewModel())
+}

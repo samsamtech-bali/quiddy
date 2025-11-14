@@ -66,3 +66,9 @@ struct OnboardingCostFeedback: View {
     }
 }
 
+#Preview {
+    OnboardingCostFeedback()
+        .environmentObject(Router.shared)
+        .environmentObject(RegisterViewModel())
+}
+

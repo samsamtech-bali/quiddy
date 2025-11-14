@@ -132,32 +132,8 @@ struct BuddyView: View {
 }
 
 #Preview {
-    var emptyDateArr: [Date] = []
-    BuddyView(
-        userRecord:QuiddyUserModel(
-            username: "stephan",
-            quiddyCode: "1AB482",
-            stopDate: Date.now,
-            updatedStopDate: Date.now,
-            cigPerDay: 5,
-            pricePerCig: 12500,
-            dateCravingPressed: emptyDateArr,
-            badges: "[]",
-            relapseDate: emptyDateArr,
-            buddyCode: "FF1592"
-        ),
-        buddyRecord: QuiddyUserModel(
-            username: "jeremy",
-            quiddyCode: "FF1592",
-            stopDate: Date.now,
-            updatedStopDate: Date.now,
-            cigPerDay: 3,
-            pricePerCig: 5000,
-            dateCravingPressed: emptyDateArr,
-            badges: "[]",
-            relapseDate: emptyDateArr,
-            buddyCode: "1AB482"
-        )
-    )
+    BuddyView()
+        .environmentObject(RegisterViewModel())
+        .environmentObject(BuddyViewModel())
 }
 
