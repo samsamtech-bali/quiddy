@@ -65,24 +65,29 @@ struct OnboardingFlowContainer: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
-                // Fixed Bottom Button
-                Button(action: {
-                    handleContinue()
-                }) {
-                    Text("Continue")
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.white, lineWidth: 1)
-                        )
+                // Fixed Bottom Button - Hidden on auto-advance screens
+                if currentPage != 2 && currentPage != 4 {
+                    Button(action: {
+                        handleContinue()
+                    }) {
+                        Text(currentPage == 5 ? "I promise myself" : "Continue")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(Color.white, lineWidth: 1)
+                            )
+                    }
+                    .disabled(!canContinue())
+                    .opacity(canContinue() ? 1.0 : 0.5)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
+                } else {
+                    Spacer()
+                        .frame(height: 80) // Maintain spacing when button is hidden
                 }
-                .disabled(!canContinue())
-                .opacity(canContinue() ? 1.0 : 0.5)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
             }
         }
         .navigationBarHidden(true)

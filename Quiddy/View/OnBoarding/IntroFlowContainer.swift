@@ -73,7 +73,8 @@ struct IntroFlowContainer: View {
                 VStack(spacing: 16) {
                     // Page Indicators - Fixed Position
                     PageIndicatorStatic(currentPage: currentPage, totalPages: 3)
-                        .padding(.bottom, 8)
+                        .padding(.top, 24)
+                        .padding(.bottom, 16)
                     
                     // Button - Fixed Position
                     Button(action: {
