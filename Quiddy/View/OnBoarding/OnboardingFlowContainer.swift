@@ -21,6 +21,7 @@ struct OnboardingFlowContainer: View {
                 // Fixed Header with Back Button and Progress Bar
                 HStack {
                     Button(action: {
+                        HapticsManager.shared.selection()
                         if currentPage > 0 {
                             withAnimation {
                                 currentPage -= 1
@@ -58,7 +59,7 @@ struct OnboardingFlowContainer: View {
                     case 4:
                         OnboardingContentFive()
                     case 5:
-                        OnboardingContentSix()
+                        OnboardingContentSix(hasDrawn: $hasDrawnPromise)
                     default:
                         OnboardingContentOne()
                     }
@@ -68,6 +69,7 @@ struct OnboardingFlowContainer: View {
                 // Fixed Bottom Button - Hidden on auto-advance screens
                 if currentPage != 2 && currentPage != 4 {
                     Button(action: {
+                        HapticsManager.shared.selection()
                         handleContinue()
                     }) {
                         Text(currentPage == 5 ? "I promise myself" : "Continue")
@@ -99,16 +101,16 @@ struct OnboardingFlowContainer: View {
             return !registerVM.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case 1:
             return registerVM.cigPerDay > 0
-        case 2, 4:
-            return true // Thank you and cost feedback screens auto-advance
         case 3:
             return registerVM.pricePerCig > 0
         case 5:
-            return true // Drawing screen has its own validation in content
+            return hasDrawnPromise // Drawing screen validation
         default:
             return true
         }
     }
+    
+    @State private var hasDrawnPromise: Bool = false
     
     private func handleContinue() {
         switch currentPage {
@@ -122,8 +124,9 @@ struct OnboardingFlowContainer: View {
             withAnimation {
                 currentPage += 1
             }
-            // Auto-advance after delay
+            // Auto-advance after delay with haptic
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                HapticsManager.shared.pageTransition()
                 withAnimation {
                     currentPage += 1
                 }
@@ -135,8 +138,9 @@ struct OnboardingFlowContainer: View {
             withAnimation {
                 currentPage += 1
             }
-            // Auto-advance after delay
+            // Auto-advance after delay with haptic
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                HapticsManager.shared.pageTransition()
                 withAnimation {
                     currentPage += 1
                 }
@@ -145,6 +149,11 @@ struct OnboardingFlowContainer: View {
             // Cost feedback - handled by auto-advance
             break
         case 5:
+            // Final commitment - success haptic
+            HapticsManager.shared.mediumImpact()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                HapticsManager.shared.success()
+            }
             router.path.append(Route.pageOne)
         default:
             break
@@ -440,7 +449,7 @@ struct OnboardingContentFive: View {
 }
 
 struct OnboardingContentSix: View {
-    @State private var hasDrawn = false
+    @Binding var hasDrawn: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

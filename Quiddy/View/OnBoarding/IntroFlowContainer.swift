@@ -22,6 +22,7 @@ struct IntroFlowContainer: View {
                     // Back button - only on screens 1 and 2
                     if currentPage > 0 {
                         Button(action: {
+                            HapticsManager.shared.selection()
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 currentPage -= 1
                             }
