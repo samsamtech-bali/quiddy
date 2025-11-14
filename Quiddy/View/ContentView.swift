@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Quiddy
 //
-//  Created by stephan on 05/11/25.
+//  REFACTORED by Kelvin on 14/11/25.
 //
 
 import SwiftUI
@@ -14,8 +14,8 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            // Start with first intro screen
-            IntroScreenOne()
+            // Start with intro flow container
+            IntroFlowContainer()
                 .navigationBarHidden(true)
                 .navigationDestination(for: Route.self) { route in
                     destinationView(for: route)
@@ -28,32 +28,13 @@ struct ContentView: View {
     private func destinationView(for route: Route) -> some View {
         Group {
             switch route {
-            case .intro1:
-                IntroScreenOne()
+            case .intro1, .intro2, .intro3:
+                // These are handled by IntroFlowContainer
+                IntroFlowContainer()
                 
-            case .intro2:
-                IntroScreenTwo()
-                
-            case .intro3:
-                IntroScreenThree()
-                
-            case .usernameView:
-                OnboardingThree()
-                
-            case .ciggerateView:
-                OnboardingFour()
-                
-            case .priceView:
-                OnboardingFive()
-                
-            case .thankYouView:
-                OnboardingThankYou()
-                
-            case .costFeedbackView:
-                OnboardingCostFeedback()
-                
-            case .promiseView:
-                OnboardingSix()
+            case .usernameView, .ciggerateView, .thankYouView, .priceView, .costFeedbackView, .promiseView:
+                // All onboarding handled by OnboardingFlowContainer
+                OnboardingFlowContainer()
                 
             case .successView:
                 OnboardingSuccess()
