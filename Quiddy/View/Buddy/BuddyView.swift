@@ -10,6 +10,8 @@ import SwiftUI
 struct BuddyView: View {
     @EnvironmentObject var registerVM: RegisterViewModel
     @EnvironmentObject var buddyVM: BuddyViewModel
+    @EnvironmentObject var badgeVM: BadgeViewModel
+    @EnvironmentObject var buddyBadgeVM: BuddyBadgeViewModel
     
     @State var hasBuddy = false
     @State var code: String = ""
@@ -19,16 +21,47 @@ struct BuddyView: View {
     @State var userRecord: QuiddyUserModel?
     @State var buddyRecord: QuiddyUserModel?
     
+    @State var userFreeSmokeDays: Int = 0
+    @State var userMoneySaved: Int = 0
+    
+    @State var buddyFreeSmokeDays: Int = 0
+    @State var buddyMoneySaved: Int = 0
+    
+    @State var combinedFreeSmokeDays: Int = 0
+    @State var combinedMoneySaved: Int = 0
+    
     var body: some View {
         
         VStack {
             if hasBuddy {
                 VStack {
                     Text("=== Your Data ===")
+                    Text("name:")
                     Text(userRecord?.username ?? "No name")
+                    
+                    Text("days since:")
+                    Text("\(userFreeSmokeDays)")
+                    
+                    Text("money saved:")
+                    Text("\(userMoneySaved)")
+                    
+                    Button("reset", action: {
+                        Task {
+                            guard let userRecord = self.userRecord else { return }
+                            guard let buddyRecord = self.buddyRecord else { return }
+                            
+                            await badgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
+                        }
+                    })
                     
                     Text("=== Buddy Data ===")
                     Text(buddyRecord?.username ?? "Buddy has no name")
+                    
+                    Text("days since:")
+                    Text("\(buddyFreeSmokeDays)")
+                    
+                    Text("money saved:")
+                    Text("\(buddyMoneySaved)")
                     
                     Button("Remove buddy", action: {
                         Task {
@@ -44,6 +77,25 @@ struct BuddyView: View {
                             hasBuddy = false
                         }
                     })
+                    
+                    Text("=== Combine Data ===")
+                    
+                    Text("streak:")
+                    Text("\(combinedFreeSmokeDays)")
+                    
+                    Text("total money saved:")
+                    Text("\(combinedMoneySaved)")
+                    
+                    Spacer()
+                    
+                    Button("calculate", action: {
+                        guard let userRecord = self.userRecord else { return }
+                        let days = buddyBadgeVM.calculateSharedStreak(since: userRecord.buddyStartDate)
+                        
+                        print("days: \(days)")
+                    })
+                    
+                    
                 }
                 .padding()
             } else {
@@ -104,6 +156,9 @@ struct BuddyView: View {
                 
                 
                 guard let record = self.userRecord else { return }
+                userFreeSmokeDays = badgeVM.daysSmokesFree(record.updatedStopDate)
+                userMoneySaved = badgeVM.calculateMoneySaved(record: record)
+                
                 if record.buddyCode != "" && record.buddyCode != "-" {
                     self.hasBuddy = true
                 }
@@ -124,6 +179,14 @@ struct BuddyView: View {
                     }
                     
                     self.buddyRecord = try await registerVM.fetchByUniqueCode(record.buddyCode)
+                    
+                    guard let buddyRecord = self.buddyRecord else { return }
+                    buddyFreeSmokeDays = badgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
+                    buddyMoneySaved = badgeVM.calculateMoneySaved(record: buddyRecord)
+                    
+                    combinedFreeSmokeDays = buddyBadgeVM.calculateSharedStreak(since: record.buddyStartDate)
+                    
+                    combinedMoneySaved = buddyBadgeVM.calculateSharedMoneySaved(userRecord: record, buddyRecord: buddyRecord)
                 }
             }
             
@@ -132,8 +195,34 @@ struct BuddyView: View {
 }
 
 #Preview {
-    BuddyView()
-        .environmentObject(RegisterViewModel())
-        .environmentObject(BuddyViewModel())
+    var emptyDateArr: [Date] = []
+    BuddyView(
+        userRecord:QuiddyUserModel(
+            username: "stephan",
+            quiddyCode: "1AB482",
+            stopDate: Date.now,
+            updatedStopDate: Date.now,
+            cigPerDay: 5,
+            pricePerCig: 12500,
+            dateCravingPressed: emptyDateArr,
+            badges: "[]",
+            relapseDate: emptyDateArr,
+            buddyCode: "FF1592",
+            buddyStartDate: Date()
+        ),
+        buddyRecord: QuiddyUserModel(
+            username: "jeremy",
+            quiddyCode: "FF1592",
+            stopDate: Date.now,
+            updatedStopDate: Date.now,
+            cigPerDay: 3,
+            pricePerCig: 5000,
+            dateCravingPressed: emptyDateArr,
+            badges: "[]",
+            relapseDate: emptyDateArr,
+            buddyCode: "1AB482",
+            buddyStartDate: Date()
+        )
+    )
 }
 
