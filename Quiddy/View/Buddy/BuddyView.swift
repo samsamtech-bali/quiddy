@@ -239,3 +239,4 @@ struct BuddyView: View {
         )
     )
 }
+

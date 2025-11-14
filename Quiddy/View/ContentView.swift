@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Quiddy
 //
-//  Created by stephan on 05/11/25.
+//  REFACTORED by Kelvin on 14/11/25.
 //
 
 import SwiftUI
@@ -10,52 +10,43 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var registerViewModel = RegisterViewModel()
-    @StateObject private var cloudKitManager = CloudKitManager()
+//    @StateObject private var cloudKitManager = CloudKitManager()
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            
-            Text("IS SIGNED IN: \(cloudKitManager.isSignedInToiCloud)")
-            Text("\(cloudKitManager.error)")
-            
-            Text("Permission Status: \(cloudKitManager.permissionStatus.description.uppercased())")
-            Text("Name: \(cloudKitManager.username)")
-            
-            Button("Start", action: {
-                router.path.append(Route.usernameView)
-            })
-            .navigationDestination(for: Route.self, destination: { route in
-                switch route {
-                case .usernameView:
-                    OnboardingThree()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
-                case .ciggerateView:
-                    OnboardingFour()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
-                case .priceView:
-                    OnboardingFive()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
-                case .successView:
-                    OnboardingSix()
-                        .environmentObject(registerViewModel)
-                default:
-                    OnboardingThree()
-                        .environmentObject(router)
-                        .environmentObject(registerViewModel)
+            // Start with intro flow container
+            IntroFlowContainer()
+                .navigationBarHidden(true)
+                .navigationDestination(for: Route.self) { route in
+                    destinationView(for: route)
                 }
-            }
-            )
         }
-        .padding()
+        .environmentObject(registerViewModel)
     }
     
+    @ViewBuilder
+    private func destinationView(for route: Route) -> some View {
+        Group {
+            switch route {
+            case .intro1, .intro2, .intro3:
+                // These are handled by IntroFlowContainer
+                IntroFlowContainer()
+                
+            case .usernameView, .ciggerateView, .thankYouView, .priceView, .costFeedbackView, .promiseView:
+                // All onboarding handled by OnboardingFlowContainer
+                OnboardingFlowContainer()
+                
+            case .successView:
+                OnboardingSuccess()
+                
+            case .pageOne:
+                MainTabView()
+            }
+        }
+    }
 }
 
 #Preview {
-    
     ContentView()
         .environmentObject(Router.shared)
 }

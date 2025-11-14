@@ -27,9 +27,6 @@ struct RegisterView: View {
         }
         .padding()
         
-            
-            
-        
         
     }
 }
