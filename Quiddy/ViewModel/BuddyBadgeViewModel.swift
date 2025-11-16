@@ -12,25 +12,9 @@ class BuddyBadgeViewModel: ObservableObject {
     let container: CKContainer
     let databasePublic: CKDatabase
     
-    @Published var availableBadges = []
-    
     init() {
         self.container = CKContainer(identifier: "iCloud.com.stephan.iCloud")
         self.databasePublic = container.publicCloudDatabase
-        
-        self.availableBadges = [
-            (id: "streak7" , asset: "streak7.png", type: "streak", name: "7 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "streak15" , asset: "streak15.png", type: "streak", name: "15 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "streak30" , asset: "streak30.png", type: "streak", name: "30 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "streak60" , asset: "streak60.png", type: "streak", name: "60 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "streak120" , asset: "streak120.png", type: "streak", name: "120 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            
-            (id: "money100", asset: "money100.png", type: "money", name: "100.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "money250", asset: "money250.png", type: "money", name: "250.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "money500", asset: "money500.png", type: "money", name: "500.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "money1000", asset: "money1000.png", type: "money", name: "1.000.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
-            (id: "money2500", asset: "money2500.png", type: "money", name: "2.500.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 7)
-        ]
     }
     
     func addBuddyBadge(userRecord: CKRecord.ID, buddyRecord: CKRecord.ID, badgeType: String, badgeThreshold: Int) async -> BuddyBadgeModel? {
@@ -376,6 +360,64 @@ class BuddyBadgeViewModel: ObservableObject {
         
     }
     
+    func compareBadges(achievedBadges: [BuddyBadgeModel]) -> [(id: String, asset: String, type: String, name: String, description: String, achieved: Bool, count: Int, threshold: Int)] {
+        var availableBadges = [
+            (id: "streak7" , asset: "streak7.png", type: "streak", name: "7 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 7),
+            (id: "streak14" , asset: "streak14.png", type: "streak", name: "14 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 14),
+            (id: "streak30" , asset: "streak30.png", type: "streak", name: "30 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 30),
+            (id: "streak60" , asset: "streak60.png", type: "streak", name: "60 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 60),
+            (id: "streak90" , asset: "streak60.png", type: "streak", name: "90 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 90),
+            (id: "streak120" , asset: "streak120.png", type: "streak", name: "120 Days", description: "lorem ipsum", achieved: false, count: 0, threshold: 120),
+            
+            (id: "money100", asset: "money100.png", type: "money", name: "100.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 100000),
+            (id: "money250", asset: "money250.png", type: "money", name: "250.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 250000),
+            (id: "money500", asset: "money500.png", type: "money", name: "500.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 500000),
+            (id: "money1000", asset: "money1000.png", type: "money", name: "1.000.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 1000000),
+            (id: "money2500", asset: "money2500.png", type: "money", name: "2.500.000 saved", description: "lorem ipsum", achieved: false, count: 0, threshold: 2500000)
+        ]
+        
+        for badge in achievedBadges {
+            switch badge.badgeName {
+            case "7 Days":
+                availableBadges[0].achieved = true
+                availableBadges[0].count += 1
+            case "14 Days":
+                availableBadges[1].achieved = true
+                availableBadges[1].count += 1
+            case "30 Days":
+                availableBadges[2].achieved = true
+                availableBadges[2].count += 1
+            case "60 Days":
+                availableBadges[3].achieved = true
+                availableBadges[3].count += 1
+            case "90 Days":
+                availableBadges[4].achieved = true
+                availableBadges[4].count += 1
+            case "120 Days":
+                availableBadges[5].achieved = true
+                availableBadges[5].count += 1
+            case "100.000 saved":
+                availableBadges[1].achieved = true
+                availableBadges[1].count += 1
+            case "250.000 saved":
+                availableBadges[2].achieved = true
+                availableBadges[2].count += 1
+            case "500.000 saved":
+                availableBadges[3].achieved = true
+                availableBadges[3].count += 1
+            case "1.000.000 saved":
+                availableBadges[4].achieved = true
+                availableBadges[4].count += 1
+            case "2.500.000 saved":
+                availableBadges[5].achieved = true
+                availableBadges[5].count += 1
+            default:
+                continue
+            }
+        }
+        
+        return availableBadges
+    }
     
     
 }
