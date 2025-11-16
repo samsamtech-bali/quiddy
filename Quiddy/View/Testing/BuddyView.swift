@@ -30,6 +30,9 @@ struct BuddyView: View {
     @State var combinedFreeSmokeDays: Int = 0
     @State var combinedMoneySaved: Int = 0
     
+    @State var badges: [(id: String, asset: String, type: String, name: String, description: String, achieved: Bool, count: Int, threshold: Int)] = []
+    
+    
     var body: some View {
         
         VStack {
@@ -85,6 +88,18 @@ struct BuddyView: View {
                     
                     Text("total money saved:")
                     Text("\(combinedMoneySaved)")
+                    
+                    
+                    Text("=== Badges Data ===")
+                    
+                    VStack {
+                        ForEach(0..<badges.count, id: \.self) { index in
+                            HStack {
+                                Text("name \(badges[index].name)")
+                                Text("count \(badges[index].count)")
+                            }
+                        }
+                    }
                     
                     Spacer()
                     
@@ -170,6 +185,7 @@ struct BuddyView: View {
                 if record.buddyCode != "" && record.buddyCode != "-" {
                     self.hasBuddy = true
                 }
+                
             }
         }
         .onChange(of: hasBuddy) {
@@ -199,6 +215,8 @@ struct BuddyView: View {
                     await buddyBadgeVM.checkAchievedBadges(streak: combinedFreeSmokeDays, moneySaved: combinedMoneySaved, userRecord: record.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID)
                     
                     let badgeByStreakType = try await buddyBadgeVM.fetchAllBadgesByType(userRecordName: record.getRecord().recordID.recordName, badgeType: BadgeType.streak.rawValue)
+                    
+                    self.badges = buddyBadgeVM.compareBadges(achievedBadges: badgeByStreakType)
                     
                     print("badgeByStreakType: \(badgeByStreakType)")
                 }
