@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct OnboardingContentSix: View {
-    @State private var hasDrawn = false
+    @Binding var hasDrawn: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -42,5 +42,5 @@ struct OnboardingContentSix: View {
 }
 
 #Preview {
-    OnboardingContentSix()
+    OnboardingContentSix(hasDrawn: .constant(true))
 }

@@ -60,7 +60,7 @@ struct OnboardingFlowContainer: View {
                     case 4:
                         OnboardingContentFive()
                     case 5:
-                        OnboardingContentSix()
+                        OnboardingContentSix(hasDrawn: $hasDrawnPromise)
                     default:
                         OnboardingContentOne()
                     }
