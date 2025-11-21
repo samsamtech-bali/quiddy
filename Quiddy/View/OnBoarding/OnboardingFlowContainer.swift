@@ -11,6 +11,7 @@ struct OnboardingFlowContainer: View {
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var registerVM: RegisterViewModel
     @State private var currentPage: Int = 0
+    @State private var hasDrawnPromise: Bool = false
     
     var body: some View {
         ZStack {
@@ -21,6 +22,7 @@ struct OnboardingFlowContainer: View {
                 // Fixed Header with Back Button and Progress Bar
                 HStack {
                     Button(action: {
+                        HapticsManager.shared.selection()
                         if currentPage > 0 {
                             withAnimation {
                                 currentPage -= 1
@@ -65,24 +67,30 @@ struct OnboardingFlowContainer: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
-                // Fixed Bottom Button
-                Button(action: {
-                    handleContinue()
-                }) {
-                    Text("Continue")
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.white, lineWidth: 1)
-                        )
+                // Fixed Bottom Button - Hidden on auto-advance screens
+                if currentPage != 2 && currentPage != 4 {
+                    Button(action: {
+                        HapticsManager.shared.selection()
+                        handleContinue()
+                    }) {
+                        Text(currentPage == 5 ? "I promise myself" : "Continue")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(Color.white, lineWidth: 1)
+                            )
+                    }
+                    .disabled(!canContinue())
+                    .opacity(canContinue() ? 1.0 : 0.5)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
+                } else {
+                    Spacer()
+                        .frame(height: 80) // Maintain spacing when button is hidden
                 }
-                .disabled(!canContinue())
-                .opacity(canContinue() ? 1.0 : 0.5)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
             }
         }
         .navigationBarHidden(true)
@@ -99,7 +107,8 @@ struct OnboardingFlowContainer: View {
         case 3:
             return registerVM.pricePerCig > 0
         case 5:
-            return true // Drawing screen has its own validation in content
+            return hasDrawnPromise // Drawing screen validation
+            
         default:
             return true
         }
@@ -117,8 +126,10 @@ struct OnboardingFlowContainer: View {
             withAnimation {
                 currentPage += 1
             }
-            // Auto-advance after delay
+            
+            // Auto-advance after delay with haptic
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                HapticsManager.shared.pageTransition()
                 withAnimation {
                     currentPage += 1
                 }
@@ -130,8 +141,10 @@ struct OnboardingFlowContainer: View {
             withAnimation {
                 currentPage += 1
             }
-            // Auto-advance after delay
+            
+            // Auto-advance after delay with haptic
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                HapticsManager.shared.pageTransition()
                 withAnimation {
                     currentPage += 1
                 }
@@ -158,10 +171,18 @@ struct OnboardingFlowContainer: View {
                     cigPerDay: registerVM.cigPerDay,
                     pricePerCig: registerVM.pricePerCig
                 )
+                
+                // Final commitment - success haptic
+                HapticsManager.shared.mediumImpact()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    HapticsManager.shared.success()
+                    
+                }
+                router.path.append(Route.pageOne)
             }
-            router.path.append(Route.pageOne)
         default:
             break
+            
         }
     }
 }
