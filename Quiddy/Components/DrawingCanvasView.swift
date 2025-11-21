@@ -2,9 +2,8 @@
 //  DrawingCanvasView.swift
 //  Quiddy
 //
-//  Created by Kelvin on 11/11/25.
+//  Updated with Haptics by Kelvin on 14/11/25.
 //
-
 
 import SwiftUI
 
@@ -43,16 +42,28 @@ struct DrawingCanvasView: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
+                        if currentLine.points.isEmpty {
+                            // Haptic when starting to draw
+                            HapticsManager.shared.drawingStart()
+                        }
                         currentLine.points.append(value.location)
+                        print(hasDrawn)
                         hasDrawn = true
+                        print(hasDrawn)
                     }
                     .onEnded { _ in
                         lines.append(currentLine)
                         currentLine = Line(points: [])
+                        
+                        // Check if drawing looks complete (has multiple strokes)
+                        if lines.count >= 2 && hasDrawn {
+                            HapticsManager.shared.checkmarkCompleted()
+                        }
                     }
             )
             
             Button(action: {
+                HapticsManager.shared.lightImpact()
                 lines.removeAll()
                 currentLine = Line(points: [])
                 hasDrawn = false
@@ -71,4 +82,3 @@ struct DrawingCanvasView: View {
 struct Line {
     var points: [CGPoint]
 }
-
