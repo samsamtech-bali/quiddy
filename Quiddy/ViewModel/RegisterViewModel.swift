@@ -58,10 +58,13 @@ class RegisterViewModel: ObservableObject {
                     cigPerDay: cigPerDay,
                     pricePerCig: pricePerCig,
                     dateCravingPressed: emptyDateArr,
-                    badges: emptyStringJSON,
+//                    badges: emptyStringJSON,
                     relapseDate: emptyDateArr,
                     buddyCode: emptyString,
-                    buddyStartDate: emptyDate
+                    buddyStartDate: emptyDate,
+                    incomingCode: emptyString,
+                    invitedDate: emptyDate,
+                    outgoingCode: emptyString
                 )
                 let quiddyUserRecord = quiddyUser.getRecord()
                 let record = try await databasePublic.save(quiddyUserRecord)
