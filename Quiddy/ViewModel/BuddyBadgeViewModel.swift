@@ -17,6 +17,112 @@ class BuddyBadgeViewModel: ObservableObject {
         self.databasePublic = container.publicCloudDatabase
     }
     
+    func daysSmokesFree(_ updatedStopDate: Date) -> Int {
+        //        NOTE: use updatedStopDate not stopDate
+        let calendar = Calendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.day], from: updatedStopDate, to: now)
+        return max(0, components.day ?? 0)
+    }
+    
+    func calculateMoneySaved(record: QuiddyUserModel) -> Int {
+        //        TODO: refactor logic use stopDate and decrease with relapse date
+        
+        let stopDate = record.stopDate
+        let arrRelapseDate = record.relapseDate
+        
+        print("stopDate: \(stopDate)")
+        print("arrRelapseDate: \(arrRelapseDate)")
+        
+        let relapseDays = arrRelapseDate.count
+        print("relapseDays: \(relapseDays)")
+        
+        let smokeFreeSinceStart = daysSmokesFree(stopDate)
+        let totalFree = smokeFreeSinceStart - relapseDays
+        
+        let cigPerDay = record.cigPerDay
+        let pricePerCig = record.pricePerCig
+        
+        print("smokeFreeSinceStart: \(smokeFreeSinceStart)")
+        print("totalFree: \(totalFree)")
+        print("cigPerDay: \(cigPerDay)")
+        print("pricePerCig: \(pricePerCig)")
+        
+        let dailyCost = cigPerDay * Int(pricePerCig)
+        print("dailyCost: \(dailyCost)")
+        return Int(dailyCost) * totalFree
+    }
+    
+    func reset(userRecord: CKRecord.ID, buddyRecord: CKRecord.ID, userRelapseDate: inout [Date]) async {
+        do {
+            print("Running reset...")
+            let userRecordID = try await self.databasePublic.record(for: userRecord)
+            let buddyRecordID = try await self.databasePublic.record(for: buddyRecord)
+            
+            print("args userRecord: \(userRecordID)")
+            print("args buddyRecord: \(buddyRecordID)")
+            
+            print("userRelapseDate: \(userRelapseDate)")
+            
+            let dateNow = Date()
+            var condition: Bool = false
+            
+            //            check if already contain date no need to save
+            for date in userRelapseDate {
+                print("looping through userRelapseDate: \(date)")
+                let matched = userRelapseDate.contains {
+                    print("$0 is \($0)")
+                    let userRelapseDateComponent = Calendar.current.dateComponents([.day, .year, .month], from: $0)
+                    let dateNowComponent = Calendar.current.dateComponents([.day, .year, .month], from: dateNow)
+                    print("userRelapseDateComponent: \(userRelapseDateComponent)")
+                    print("dateNowComponent: \(dateNowComponent)")
+                    print("result: \(userRelapseDateComponent == dateNowComponent)")
+                    return userRelapseDateComponent == dateNowComponent
+                }
+                
+                print("matched: \(matched)")
+                
+                if matched == false {
+                    print("matched false")
+                    condition = false
+                    continue
+                } else {
+                    print("matched true")
+                    condition = true
+                    break
+                }
+                
+            }
+            
+            print("break the loop")
+            
+            if condition == false {
+                print("condition false so append...")
+                userRelapseDate.append(dateNow)
+            }
+            
+            //        reset userRecord
+            userRecordID.setValuesForKeys([
+                QuiddyUserFields.updatedStopDate.rawValue: dateNow,
+                QuiddyUserFields.buddyStartDate.rawValue: dateNow,
+                QuiddyUserFields.relapseDate.rawValue: userRelapseDate
+            ])
+            
+            _ = try await self.databasePublic.save(userRecordID)
+            print("user record updated!")
+            //        reset buddyRecord
+            buddyRecordID.setValuesForKeys([
+                QuiddyUserFields.buddyStartDate.rawValue: dateNow
+            ])
+            
+            _ = try await self.databasePublic.save(buddyRecordID)
+            print("buddy record updated!")
+        } catch {
+            print("Error reset: \(error.localizedDescription)")
+            return
+        }
+    }
+    
     func addBuddyBadge(userRecord: CKRecord.ID, buddyRecord: CKRecord.ID, badgeType: String, badgeThreshold: Int) async -> BuddyBadgeModel? {
         do {
             print("Running addBuddyBadge function...")
@@ -183,7 +289,7 @@ class BuddyBadgeViewModel: ObservableObject {
             
         }
         
-    
+        
     }
     
     func fetchAllBadgesByTypeAndUserB(userRecordName: String, badgeType: String) async throws -> [BuddyBadgeModel]?{
@@ -236,7 +342,7 @@ class BuddyBadgeViewModel: ObservableObject {
             
         }
         
-    
+        
     }
     
     func fetchAllBadgesByType(userRecordName: String, badgeType: String) async throws -> [BuddyBadgeModel] {
@@ -274,11 +380,11 @@ class BuddyBadgeViewModel: ObservableObject {
     
     func calculateSharedMoneySaved(userRecord: QuiddyUserModel, buddyRecord: QuiddyUserModel) -> Int {
         //        calculate user money
-        let userMoneySaved = BadgeViewModel().calculateMoneySaved(record: userRecord)
+        let userMoneySaved = calculateMoneySaved(record: userRecord)
         print("userMoneySaved: \(userMoneySaved)")
         
         //        calculate buddy money
-        let buddyMoneySaved = BadgeViewModel().calculateMoneySaved(record: buddyRecord)
+        let buddyMoneySaved = calculateMoneySaved(record: buddyRecord)
         print("buddyMoneySaved: \(buddyMoneySaved)")
         
         let total = userMoneySaved + buddyMoneySaved
@@ -426,4 +532,3 @@ enum BadgeType: String {
     case streak
     case moneySaved
 }
-

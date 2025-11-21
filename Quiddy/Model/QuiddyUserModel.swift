@@ -17,10 +17,15 @@ class QuiddyUserModel {
     public var cigPerDay: Int
     public var pricePerCig: Double
     public var dateCravingPressed: [Date]
-    public var badges: String
+//    public var badges: String
     public var relapseDate: [Date]
     public var buddyCode: String
     public var buddyStartDate: Date
+    
+    public var incomingCode: String
+    public var invitedDate: Date
+    public var outgoingCode: String
+    
     
     func getRecord() -> CKRecord {
         let quiddyUserRecord  = CKRecord(recordType: RecordNames.QuiddyUsers.rawValue, recordID: userID ?? CKRecord(recordType: RecordNames.QuiddyUsers.rawValue, recordID: CKRecord.ID(recordName: UUID().uuidString)).recordID)
@@ -33,10 +38,13 @@ class QuiddyUserModel {
             QuiddyUserFields.cigPerDay.rawValue: self.cigPerDay,
             QuiddyUserFields.pricePerCig.rawValue: self.pricePerCig,
             QuiddyUserFields.dateCravingPressed.rawValue: self.dateCravingPressed,
-            QuiddyUserFields.badges.rawValue: self.badges,
+//            QuiddyUserFields.badges.rawValue: self.badges,
             QuiddyUserFields.relapseDate.rawValue: self.relapseDate,
             QuiddyUserFields.buddyCode.rawValue: self.buddyCode,
-            QuiddyUserFields.buddyStartDate.rawValue: self.buddyStartDate
+            QuiddyUserFields.buddyStartDate.rawValue: self.buddyStartDate,
+            QuiddyUserFields.incomingCode.rawValue: self.incomingCode,
+            QuiddyUserFields.invitedDate.rawValue: self.invitedDate,
+            QuiddyUserFields.outgoingCode.rawValue: self.outgoingCode
         ])
         
         return quiddyUserRecord
@@ -64,8 +72,8 @@ class QuiddyUserModel {
         guard let dateCravingPressed = record[QuiddyUserFields.dateCravingPressed.rawValue] as? [Date] else { return nil }
         self.dateCravingPressed = dateCravingPressed
         
-        guard let badges = record[QuiddyUserFields.badges.rawValue] as? String else { return nil }
-        self.badges = badges
+//        guard let badges = record[QuiddyUserFields.badges.rawValue] as? String else { return nil }
+//        self.badges = badges
         
         guard let relapseDate = record[QuiddyUserFields.relapseDate.rawValue] as? [Date] else { return nil }
         self.relapseDate = relapseDate
@@ -75,6 +83,15 @@ class QuiddyUserModel {
         
         guard let buddyStartDate = record[QuiddyUserFields.buddyStartDate.rawValue] as? Date else { return nil }
         self.buddyStartDate = buddyStartDate
+        
+        guard let incomingCode = record[QuiddyUserFields.incomingCode.rawValue] as? String else { return nil }
+        self.incomingCode = incomingCode
+        
+        guard let invitedDate = record[QuiddyUserFields.invitedDate.rawValue] as? Date else { return nil }
+        self.invitedDate = invitedDate
+        
+        guard let outgoingCode = record[QuiddyUserFields.outgoingCode.rawValue] as? String else { return nil }
+        self.outgoingCode = outgoingCode
         
         self.userID = record.recordID
     }
@@ -88,10 +105,13 @@ class QuiddyUserModel {
         cigPerDay: Int,
         pricePerCig: Double,
         dateCravingPressed: [Date],
-        badges: String,
+//        badges: String,
         relapseDate: [Date],
         buddyCode: String,
-        buddyStartDate: Date
+        buddyStartDate: Date,
+        incomingCode: String,
+        invitedDate: Date,
+        outgoingCode: String
     ) {
         self.userID = userID
         self.username = username
@@ -101,10 +121,13 @@ class QuiddyUserModel {
         self.cigPerDay = cigPerDay
         self.pricePerCig = pricePerCig
         self.dateCravingPressed = dateCravingPressed
-        self.badges = badges
+//        self.badges = badges
         self.relapseDate = relapseDate
         self.buddyCode = buddyCode
         self.buddyStartDate = buddyStartDate
+        self.incomingCode = incomingCode
+        self.invitedDate = invitedDate
+        self.outgoingCode = outgoingCode
     }
     
 }
@@ -118,14 +141,17 @@ enum QuiddyUserFields: String {
     case cigPerDay
     case pricePerCig
     case dateCravingPressed
-    case badges
+//    case badges
     case relapseDate
     case buddyCode
     case buddyStartDate
+    case incomingCode
+    case invitedDate
+    case outgoingCode
 }
 
 enum RecordNames: String {
-    case Badges
     case QuiddyUsers
     case BuddyBadge
+    case BuddyNudge
 }

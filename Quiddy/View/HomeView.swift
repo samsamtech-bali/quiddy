@@ -9,7 +9,6 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var registerViewModel: RegisterViewModel
-    @EnvironmentObject private var badgeVM: BadgeViewModel
     @EnvironmentObject private var buddyBadgeVM: BuddyBadgeViewModel
     
     @State private var showingInviteView = false
@@ -38,8 +37,8 @@ struct HomeView: View {
                 
                 guard let record = self.userRecord else { return }
                 
-                userFreeSmokeDays = badgeVM.daysSmokesFree(record.updatedStopDate)
-                userMoneySaved = badgeVM.calculateMoneySaved(record: record)
+                userFreeSmokeDays = buddyBadgeVM.daysSmokesFree(record.updatedStopDate)
+                userMoneySaved = buddyBadgeVM.calculateMoneySaved(record: record)
                 
                 if !record.buddyCode.isEmpty && record.buddyCode != "-" {
                     self.hasBuddy = true
@@ -48,8 +47,8 @@ struct HomeView: View {
                     self.buddyRecord = buddyRecord
                     
                     guard let buddyRecord = self.buddyRecord else { return }
-                    buddyFreeSmokeDays = badgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
-                    buddyMoneySaved = badgeVM.calculateMoneySaved(record: buddyRecord)
+                    buddyFreeSmokeDays = buddyBadgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
+                    buddyMoneySaved = buddyBadgeVM.calculateMoneySaved(record: buddyRecord)
                     
                     combinedFreeSmokeDays = buddyBadgeVM.calculateSharedStreak(since: record.buddyStartDate)
                     
@@ -83,7 +82,7 @@ struct HomeView: View {
                         guard let userRecord = self.userRecord else { return }
                         guard let buddyRecord = self.buddyRecord else { return }
                         
-                        await badgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
+                        await buddyBadgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
 
                     }
                 }
@@ -170,5 +169,4 @@ struct BadgePreview: View {
 #Preview {
     HomeView()
         .environmentObject(RegisterViewModel())
-        .environmentObject(BadgeViewModel())
 }

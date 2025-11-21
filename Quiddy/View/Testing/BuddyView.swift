@@ -10,8 +10,9 @@ import SwiftUI
 struct BuddyView: View {
     @EnvironmentObject var registerVM: RegisterViewModel
     @EnvironmentObject var buddyVM: BuddyViewModel
-    @EnvironmentObject var badgeVM: BadgeViewModel
     @EnvironmentObject var buddyBadgeVM: BuddyBadgeViewModel
+    @EnvironmentObject var buddyNudgeVM: BuddyNudgeViewModel
+    @EnvironmentObject var pushNotificationVM: PushNotificationViewModel
     
     @State var hasBuddy = false
     @State var code: String = ""
@@ -29,6 +30,9 @@ struct BuddyView: View {
     
     @State var combinedFreeSmokeDays: Int = 0
     @State var combinedMoneySaved: Int = 0
+    
+    @State var hasInvitation: Bool = false
+    @State var allowedToInvite: Bool = true
     
     @State var badges: [(id: String, asset: String, type: String, name: String, description: String, achieved: Bool, count: Int, threshold: Int)] = []
     
@@ -53,7 +57,7 @@ struct BuddyView: View {
                             guard let userRecord = self.userRecord else { return }
                             guard let buddyRecord = self.buddyRecord else { return }
                             
-                            await badgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
+                            await buddyBadgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
                         }
                     })
                     
@@ -103,6 +107,17 @@ struct BuddyView: View {
                     
                     Spacer()
                     
+                    Button("Nudge \(String(describing: buddyRecord?.username))", action: {
+                        Task {
+                            guard let userRecord = self.userRecord else { return }
+                            guard let buddyRecord = self.buddyRecord else { return }
+                            
+                            let message = buddyNudgeVM.randomMessage()
+                            
+                            _ = await buddyNudgeVM.createNewNudge(sender: userRecord.getRecord().recordID.recordName, receiver: buddyRecord.getRecord().recordID.recordName, message: message)
+                        }
+                    })
+                    
                     Button("calculate", action: {
                         guard let userRecord = self.userRecord else { return }
                         let days = buddyBadgeVM.calculateSharedStreak(since: userRecord.buddyStartDate)
@@ -123,6 +138,31 @@ struct BuddyView: View {
                 .padding()
             } else {
                 VStack {
+                    if hasInvitation {
+                        Text("\(userRecord?.incomingCode) is inviting you to be a buddy")
+                        Button(action: {
+                            Task {
+                                guard let userRecord = self.userRecord else { return }
+                                
+                                await buddyVM.acceptBuddy(userRecord: userRecord.getRecord().recordID, incomingCode: userRecord.incomingCode)
+                                
+                                hasBuddy = true
+                            }
+                        }, label: {
+                            Text("Accept")
+                        })
+                        
+                        Button(action: {
+                            Task {
+                                guard let userRecord = self.userRecord else { return }
+                                
+                                await buddyVM.rejectBuddy(userRecord: userRecord.getRecord().recordID, incomingCode: userRecord.incomingCode)
+                            }
+                        }, label: {
+                            Text("Reject")
+                        })
+                    }
+                    
                     TextField("Enter buddy code", text: $code)
                     
                     Button("Submit", action: {
@@ -148,17 +188,25 @@ struct BuddyView: View {
                                 showingAlert = true
                             } else {
                                 print("=== enter true state ===")
-                                await buddyVM.updateBuddyCode(
-                                    userRecord,
-                                    userCode: userRecord.quiddyCode,
-                                    buddyCode: code
-                                )
-                                hasBuddy = true
-                                code = ""
+//                                await buddyVM.updateBuddyCode(
+//                                    userRecord,
+//                                    userCode: userRecord.quiddyCode,
+//                                    buddyCode: code
+//                                )
+//                                hasBuddy = true
+                                if allowedToInvite {
+                                    await buddyVM.addBuddy(userRecord: userRecord.getRecord().recordID, userCode: userRecord.quiddyCode, buddyCode: code)
+                                    code = ""
+                                    allowedToInvite = false
+                                }
                             }
                         }
                     })
                     .buttonStyle(.borderedProminent)
+                    
+                    if !allowedToInvite {
+                        Text("You are not allowed to invite more buddy!")
+                    }
                 }
                 .padding()
                 .alert(alertMessage, isPresented: $showingAlert, actions: {
@@ -172,6 +220,7 @@ struct BuddyView: View {
                 print("hasBuddy condition: \(hasBuddy)")
                 print("run onAppear on BuddyView...")
                 
+                pushNotificationVM.requestNotificationPermissions()
                 
                 let record = try await registerVM.fetchByRecordName()
                 print("user record: \(String(describing: userRecord))")
@@ -179,11 +228,19 @@ struct BuddyView: View {
                 
                 
                 guard let record = self.userRecord else { return }
-                userFreeSmokeDays = badgeVM.daysSmokesFree(record.updatedStopDate)
-                userMoneySaved = badgeVM.calculateMoneySaved(record: record)
+                userFreeSmokeDays = buddyBadgeVM.daysSmokesFree(record.updatedStopDate)
+                userMoneySaved = buddyBadgeVM.calculateMoneySaved(record: record)
                 
                 if record.buddyCode != "" && record.buddyCode != "-" {
                     self.hasBuddy = true
+                }
+                
+                if record.incomingCode != "" && record.incomingCode != "-" {
+                    self.hasInvitation = true
+                }
+                
+                if record.outgoingCode != "" && record.outgoingCode != "-" {
+                    self.allowedToInvite = false
                 }
                 
             }
@@ -205,8 +262,8 @@ struct BuddyView: View {
                     self.buddyRecord = try await registerVM.fetchByUniqueCode(record.buddyCode)
                     
                     guard let buddyRecord = self.buddyRecord else { return }
-                    buddyFreeSmokeDays = badgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
-                    buddyMoneySaved = badgeVM.calculateMoneySaved(record: buddyRecord)
+                    buddyFreeSmokeDays = buddyBadgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
+                    buddyMoneySaved = buddyBadgeVM.calculateMoneySaved(record: buddyRecord)
                     
                     combinedFreeSmokeDays = buddyBadgeVM.calculateSharedStreak(since: record.buddyStartDate)
                     
@@ -219,6 +276,8 @@ struct BuddyView: View {
                     self.badges = buddyBadgeVM.compareBadges(achievedBadges: badgeByStreakType)
                     
                     print("badgeByStreakType: \(badgeByStreakType)")
+                    
+                    pushNotificationVM.subscribeToNudgeNotifications(sender: buddyRecord.getRecord().recordID.recordName, receiver: record.getRecord().recordID.recordName)
                 }
             }
             
@@ -237,10 +296,13 @@ struct BuddyView: View {
             cigPerDay: 5,
             pricePerCig: 12500,
             dateCravingPressed: emptyDateArr,
-            badges: "[]",
+//            badges: "[]",
             relapseDate: emptyDateArr,
             buddyCode: "FF1592",
-            buddyStartDate: Date()
+            buddyStartDate: Date(),
+            incomingCode: "-",
+            invitedDate: Date.now,
+            outgoingCode: "-"
         ),
         buddyRecord: QuiddyUserModel(
             username: "jeremy",
@@ -250,15 +312,17 @@ struct BuddyView: View {
             cigPerDay: 3,
             pricePerCig: 5000,
             dateCravingPressed: emptyDateArr,
-            badges: "[]",
+//            badges: "[]",
             relapseDate: emptyDateArr,
             buddyCode: "1AB482",
-            buddyStartDate: Date()
+            buddyStartDate: Date(),
+            incomingCode: "-",
+            invitedDate: Date.now,
+            outgoingCode: "-"
         )
     )
     .environmentObject(RegisterViewModel())
     .environmentObject(BuddyViewModel())
-    .environmentObject(BadgeViewModel())
     .environmentObject(BuddyBadgeViewModel())
+    .environmentObject(PushNotificationViewModel())
 }
-

@@ -12,8 +12,9 @@ struct QuiddyApp: App {
     @StateObject private var router = Router.shared
     @StateObject private var registerVM = RegisterViewModel()
     @StateObject private var buddyVM = BuddyViewModel()
-    @StateObject private var badgeVM = BadgeViewModel()
     @StateObject private var buddyBadgeVM = BuddyBadgeViewModel()
+    @StateObject private var pushNotificationVM = PushNotificationViewModel()
+    @StateObject private var buddyNudgeVM = BuddyNudgeViewModel()
     
     var body: some Scene {
         WindowGroup {
@@ -22,8 +23,11 @@ struct QuiddyApp: App {
                 .environmentObject(router)
                 .environmentObject(registerVM)
                 .environmentObject(buddyVM)
-                .environmentObject(badgeVM)
                 .environmentObject(buddyBadgeVM)
+                .environmentObject(pushNotificationVM)
+                .environmentObject(buddyNudgeVM)
+            
+//            PushNotification()
             
             
         }
