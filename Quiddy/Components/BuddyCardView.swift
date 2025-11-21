@@ -16,15 +16,20 @@ struct BuddyCardView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.4, green: 0.7, blue: 1.0),
-                    Color(red: 0.2, green: 0.5, blue: 0.9)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .cornerRadius(24)
+            if hasBuddy {
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0.4, green: 0.7, blue: 1.0),
+                        Color(red: 0.2, green: 0.5, blue: 0.9)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .cornerRadius(24)
+            } else {
+                Color(red: 0.25, green: 0.25, blue: 0.25)
+                    .cornerRadius(24)
+            }
             
             if hasBuddy {
                 // Existing buddy data view

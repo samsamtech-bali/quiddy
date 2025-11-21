@@ -25,8 +25,51 @@ struct HomeView: View {
     
     @State var combinedFreeSmokeDays: Int = 0
     @State var combinedMoneySaved: Int = 0
+    @State var earnedBadges: [BuddyBadgeModel] = []
     
+    private var daysSmokesFree: Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.day], from: registerViewModel.stopDate, to: now)
+        return max(0, components.day ?? 0)
+    }
     
+    private var moneySaved: Int {
+        let days = daysSmokesFree
+        let dailyCost = Double(registerViewModel.cigPerDay) * registerViewModel.pricePerCig
+        return Int(dailyCost * Double(days))
+    }
+    
+    private func resetSmokeFreeDays() {
+        registerViewModel.stopDate = Date()
+        registerViewModel.updatedStopDate = Date()
+    }
+    
+    private var earnedBadgeCount: Int {
+        return earnedBadges.count
+    }
+    
+    private var totalBadgeCount: Int {
+        return 12 // 6 streak badges + 6 money badges
+    }
+    
+    private var badgePreviewData: [(index: Int, isEarned: Bool)] {
+        let streakBadges = earnedBadges.filter { $0.badgeType == BadgeType.streak.rawValue }
+        let sortedStreakBadges = streakBadges.sorted { $0.badgeThreshold < $1.badgeThreshold }
+        
+        var previews: [(index: Int, isEarned: Bool)] = []
+        
+        // Show first 3 badges, prioritizing earned ones
+        for i in 1...3 {
+            if i <= sortedStreakBadges.count {
+                previews.append((index: i, isEarned: true))
+            } else {
+                previews.append((index: i, isEarned: false))
+            }
+        }
+        
+        return previews
+    }
     
     private func loadUserAndBuddyData() {
         Task {
@@ -55,10 +98,18 @@ struct HomeView: View {
                     combinedMoneySaved = buddyBadgeVM.calculateSharedMoneySaved(userRecord: record, buddyRecord: buddyRecord)
                     
                     await buddyBadgeVM.checkAchievedBadges(streak: combinedFreeSmokeDays, moneySaved: combinedMoneySaved, userRecord: record.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID)
+                    
+                    // Load earned badges (refresh after potential new achievements)
+                    let badges = try await buddyBadgeVM.fetchTogetherBadge(
+                        userRecordName: record.getRecord().recordID.recordName,
+                        buddyRecordName: buddyRecord.getRecord().recordID.recordName
+                    )
+                    earnedBadges = badges ?? []
                 }
                 else {
                     self.hasBuddy = false
                     self.buddyRecord = nil
+                    self.earnedBadges = []
                 }
                 
                 
@@ -66,6 +117,7 @@ struct HomeView: View {
                 print("Error loading user/buddy data: \(error)")
                 self.hasBuddy = false
                 self.buddyRecord = nil
+                self.earnedBadges = []
             }
         }
     }
@@ -74,17 +126,11 @@ struct HomeView: View {
         NavigationView {
             VStack(spacing: 20) {
             CardView(
-                username: userRecord?.username ?? "no data",
-                daysSmokesFree: userFreeSmokeDays,
-                moneySaved: userMoneySaved,
+                username: registerViewModel.username.isEmpty ? "User" : registerViewModel.username,
+                daysSmokesFree: daysSmokesFree,
+                moneySaved: moneySaved,
                 onRefresh: {
-                    Task {
-                        guard let userRecord = self.userRecord else { return }
-                        guard let buddyRecord = self.buddyRecord else { return }
-                        
-                        await buddyBadgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
-
-                    }
+                    resetSmokeFreeDays()
                 }
             )
             .offset(y: 140)
@@ -93,7 +139,7 @@ struct HomeView: View {
                 hasBuddy: hasBuddy,
                 username: buddyRecord?.username ?? "Find a buddy",
                 daysSmokesFree: buddyFreeSmokeDays,
-                moneySaved:buddyMoneySaved,
+                moneySaved: buddyMoneySaved,
                 onAddBuddyTap: {
                     showingInviteView = true
                 }
@@ -103,14 +149,23 @@ struct HomeView: View {
             // Badges Together Section
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Text("Badges Together")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Badges Together")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        
+                        Text("\(earnedBadgeCount) of \(totalBadgeCount) earned")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                    }
                     
                     Spacer()
                     
-                    NavigationLink(destination: BadgeListView()) {
+                    NavigationLink(destination: BadgeListView()
+                        .environmentObject(registerViewModel)
+                        .environmentObject(buddyBadgeVM)
+                    ) {
                         Image(systemName: "chevron.right")
                             .font(.title3)
                             .foregroundColor(.white)
@@ -120,9 +175,9 @@ struct HomeView: View {
                 
                 // Badge Preview
                 HStack(spacing: 10) {
-                    BadgePreview(badgeIndex: 1, isEarned: true)
-                    BadgePreview(badgeIndex: 2, isEarned: true)
-                    BadgePreview(badgeIndex: 3, isEarned: false)
+                    ForEach(badgePreviewData, id: \.index) { badge in
+                        BadgePreview(badgeIndex: badge.index, isEarned: badge.isEarned)
+                    }
                     
                     Spacer()
                 }
@@ -169,4 +224,5 @@ struct BadgePreview: View {
 #Preview {
     HomeView()
         .environmentObject(RegisterViewModel())
+        .environmentObject(BuddyBadgeViewModel())
 }
