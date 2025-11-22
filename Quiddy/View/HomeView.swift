@@ -15,6 +15,7 @@ struct HomeView: View {
     @State private var showingInviteView = false
     @State private var hasBuddy = false
     @State private var hasPendingRequest = false
+    @State private var hasOutgoingRequest = false
     @State private var incomingBuddyUsername = ""
     
     @State private var userRecord: QuiddyUserModel?
@@ -71,6 +72,7 @@ struct HomeView: View {
                 if !record.buddyCode.isEmpty && record.buddyCode != "-" {
                     self.hasBuddy = true
                     self.hasPendingRequest = false
+                    self.hasOutgoingRequest = false
                     
                     let buddyRecord = try await registerViewModel.fetchByUniqueCode(record.buddyCode)
                     self.buddyRecord = buddyRecord
@@ -96,6 +98,7 @@ struct HomeView: View {
                     // Has pending buddy request
                     self.hasBuddy = false
                     self.hasPendingRequest = true
+                    self.hasOutgoingRequest = false
                     
                     // Fetch the username of the person who sent the request
                     let senderRecord = try await registerViewModel.fetchByUniqueCode(record.incomingCode)
@@ -104,9 +107,19 @@ struct HomeView: View {
                     self.buddyRecord = nil
                     self.earnedBadges = []
                 }
+                else if !record.outgoingCode.isEmpty && record.outgoingCode != "-" {
+                    // Waiting for buddy to accept invitation
+                    self.hasBuddy = false
+                    self.hasPendingRequest = false
+                    self.hasOutgoingRequest = true
+                    
+                    self.buddyRecord = nil
+                    self.earnedBadges = []
+                }
                 else {
                     self.hasBuddy = false
                     self.hasPendingRequest = false
+                    self.hasOutgoingRequest = false
                     self.buddyRecord = nil
                     self.earnedBadges = []
                 }
@@ -116,6 +129,7 @@ struct HomeView: View {
                 print("Error loading user/buddy data: \(error)")
                 self.hasBuddy = false
                 self.hasPendingRequest = false
+                self.hasOutgoingRequest = false
                 self.buddyRecord = nil
                 self.earnedBadges = []
             }
@@ -144,6 +158,7 @@ struct HomeView: View {
             BuddyCardView(
                 hasBuddy: hasBuddy,
                 hasPendingRequest: hasPendingRequest,
+                hasOutgoingRequest: hasOutgoingRequest,
                 username: hasPendingRequest ? incomingBuddyUsername : (buddyRecord?.username ?? "Find a buddy"),
                 daysSmokesFree: buddyFreeSmokeDays,
                 moneySaved: buddyMoneySaved,

@@ -10,6 +10,7 @@ import SwiftUI
 struct BuddyCardView: View {
     let hasBuddy: Bool
     let hasPendingRequest: Bool
+    let hasOutgoingRequest: Bool
     let username: String?
     let daysSmokesFree: Int?
     let moneySaved: Int?
@@ -19,10 +20,18 @@ struct BuddyCardView: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            // Title outside the card - only for pending request
+            // Title outside the card - for pending request or outgoing request
             if hasPendingRequest {
                 HStack {
                     Text("Buddy Request")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white)
+                    
+                    Spacer()
+                }
+            } else if hasOutgoingRequest {
+                HStack {
+                    Text("Waiting on your buddy")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.white)
                     
@@ -140,6 +149,20 @@ struct BuddyCardView: View {
                 }
                 .padding(.horizontal, 24)
                 .frame(height: 40)
+            } else if hasOutgoingRequest {
+                // Waiting for buddy response view (matching WaitingBuddy.PNG)
+                VStack(spacing: 8) {
+                    Text("You've done your part.")
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(.white.opacity(0.9))
+                    
+                    Text("They'll show up. You know they will.")
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .frame(height: 40)
             } else {
                 // Add buddy placeholder view (matching AddBuddy.PNG)
                 Button(action: onAddBuddyTap) {
@@ -159,7 +182,7 @@ struct BuddyCardView: View {
                 .buttonStyle(PlainButtonStyle())
             }
             }
-            .frame(height: hasPendingRequest ? 60 : 150)
+            .frame(height: (hasPendingRequest || hasOutgoingRequest) ? 60 : 150)
         }
     }
 }
@@ -170,6 +193,7 @@ struct BuddyCardView: View {
         BuddyCardView(
             hasBuddy: true,
             hasPendingRequest: false,
+            hasOutgoingRequest: false,
             username: "Stephan",
             daysSmokesFree: 12,
             moneySaved: 40000,
@@ -182,6 +206,7 @@ struct BuddyCardView: View {
         BuddyCardView(
             hasBuddy: false,
             hasPendingRequest: true,
+            hasOutgoingRequest: false,
             username: "Stephan",
             daysSmokesFree: nil,
             moneySaved: nil,
@@ -194,10 +219,24 @@ struct BuddyCardView: View {
             }
         )
         
+        // Preview with outgoing request (waiting state)
+        BuddyCardView(
+            hasBuddy: false,
+            hasPendingRequest: false,
+            hasOutgoingRequest: true,
+            username: nil,
+            daysSmokesFree: nil,
+            moneySaved: nil,
+            onAddBuddyTap: {},
+            onAcceptRequest: {},
+            onDeclineRequest: {}
+        )
+        
         // Preview without buddy (Add buddy state)
         BuddyCardView(
             hasBuddy: false,
             hasPendingRequest: false,
+            hasOutgoingRequest: false,
             username: nil,
             daysSmokesFree: nil,
             moneySaved: nil,
