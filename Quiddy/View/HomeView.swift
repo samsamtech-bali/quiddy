@@ -31,6 +31,10 @@ struct HomeView: View {
     @State var combinedMoneySaved: Int = 0
     @State var earnedBadges: [BuddyBadgeModel] = []
     
+    @State private var showBadgeUnlock = false
+    @State private var newlyUnlockedBadges: [UnlockedBadge] = []
+    @State private var currentBadgeIndex = 0
+    
     private var earnedBadgeCount: Int {
         return earnedBadges.count
     }
@@ -85,6 +89,9 @@ struct HomeView: View {
                     
                     combinedMoneySaved = buddyBadgeVM.calculateSharedMoneySaved(userRecord: record, buddyRecord: buddyRecord)
                     
+                    // Store previous badges before checking for new achievements
+                    let previousBadges = earnedBadges
+                    
                     await buddyBadgeVM.checkAchievedBadges(streak: combinedFreeSmokeDays, moneySaved: combinedMoneySaved, userRecord: record.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID)
                     
                     // Load earned badges (refresh after potential new achievements)
@@ -93,6 +100,9 @@ struct HomeView: View {
                         buddyRecordName: buddyRecord.getRecord().recordID.recordName
                     )
                     earnedBadges = badges ?? []
+                    
+                    // Check for newly unlocked badges
+                    checkForNewBadges(previousBadges: previousBadges, currentBadges: earnedBadges)
                 }
                 else if !record.incomingCode.isEmpty && record.incomingCode != "-" {
                     // Has pending buddy request
@@ -133,6 +143,37 @@ struct HomeView: View {
                 self.buddyRecord = nil
                 self.earnedBadges = []
             }
+        }
+    }
+    
+    private func checkForNewBadges(previousBadges: [BuddyBadgeModel], currentBadges: [BuddyBadgeModel]) {
+        let previousBadgeIds = Set(previousBadges.map { "\($0.badgeType)-\($0.badgeThreshold)" })
+        let newBadges = currentBadges.filter { badge in
+            !previousBadgeIds.contains("\(badge.badgeType)-\(badge.badgeThreshold)")
+        }
+        
+        if !newBadges.isEmpty {
+            newlyUnlockedBadges = newBadges.compactMap { convertToUnlockedBadge($0) }
+            currentBadgeIndex = 0
+            showBadgeUnlock = true
+        }
+    }
+    
+    private func convertToUnlockedBadge(_ badge: BuddyBadgeModel) -> UnlockedBadge? {
+        if badge.badgeType == BadgeType.streak.rawValue {
+            return UnlockedBadge.streak(days: badge.badgeThreshold)
+        } else if badge.badgeType == BadgeType.moneySaved.rawValue {
+            return UnlockedBadge.moneySaved(amount: badge.badgeThreshold)
+        }
+        return nil
+    }
+    
+    private func showNextBadge() {
+        currentBadgeIndex += 1
+        if currentBadgeIndex >= newlyUnlockedBadges.count {
+            showBadgeUnlock = false
+            newlyUnlockedBadges = []
+            currentBadgeIndex = 0
         }
     }
     
@@ -234,6 +275,17 @@ struct HomeView: View {
         .ignoresSafeArea()
         }
         .navigationBarHidden(true)
+        .overlay {
+            if showBadgeUnlock && currentBadgeIndex < newlyUnlockedBadges.count {
+                BadgeUnlockView(
+                    isPresented: Binding(
+                        get: { showBadgeUnlock },
+                        set: { _ in showNextBadge() }
+                    ),
+                    badge: newlyUnlockedBadges[currentBadgeIndex]
+                )
+            }
+        }
         .sheet(isPresented: $showingInviteView) {
             InviteView()
                 .environmentObject(registerViewModel)
