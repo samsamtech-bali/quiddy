@@ -2,7 +2,6 @@
 //  InviteView.swift
 //  Quiddy
 //
-//  Created by Claude on 14/11/25.
 //
 
 import SwiftUI
@@ -107,7 +106,7 @@ struct InviteView: View {
                         .foregroundColor(.white)
                     
                     HStack {
-                        Text(registerVM.quiddyCode)
+                        Text(userRecord?.quiddyCode ?? "No Value")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.black)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -223,22 +222,34 @@ struct InviteView: View {
                         showingAlert = true
                     } else {
                         print("=== enter true state ===")
-                        // Create buddy connection
+                        // Check if user is allowed to send invitation
                         Task {
-                            await buddyVM.updateBuddyCode(
-                                userRecord,
-                                userCode: userRecord.quiddyCode,
-                                buddyCode: buddyCode
-                            )
+                            let isAllowed = await buddyVM.isAllowedToAdd(userRecord: userRecord.getRecord().recordID)
                             
                             await MainActor.run {
-                                alertMessage = "Successfully connected to your buddy!"
-                                showingAlert = true
-                                buddyCode = ""
-                                
-                                // Dismiss view after successful connection
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                    dismiss()
+                                if !isAllowed {
+                                    alertMessage = "You already have a pending invitation. Please wait for a response or cancel your current request."
+                                    showingAlert = true
+                                } else {
+                                    // Send buddy invitation
+                                    Task {
+                                        await buddyVM.addBuddy(
+                                            userRecord: userRecord.getRecord().recordID,
+                                            userCode: userRecord.quiddyCode,
+                                            buddyCode: buddyCode
+                                        )
+                                        
+                                        await MainActor.run {
+                                            alertMessage = "Invitation sent! Your buddy will receive a request to connect with you."
+                                            showingAlert = true
+                                            buddyCode = ""
+                                            
+                                            // Dismiss view after successful invitation
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                                dismiss()
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

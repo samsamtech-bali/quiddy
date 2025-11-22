@@ -9,12 +9,28 @@ import SwiftUI
 
 struct BadgeListView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var registerVM: RegisterViewModel
+    @EnvironmentObject private var buddyBadgeVM: BuddyBadgeViewModel
+    
+    @State private var userRecord: QuiddyUserModel?
+    @State private var buddyRecord: QuiddyUserModel?
+    @State private var earnedBadges: [BuddyBadgeModel] = []
+    @State private var isLoading = true
     
     let streakBadges = [7, 14, 30, 60, 90, 120]
-    let earnedStreakBadges = [7, 14] // Mock data - 7 and 14 day badges earned
-    
     let savingsBadges = [50000, 100000, 200000, 500000, 1000000, 2000000] // Savings milestones in currency units
-    let earnedSavingsBadges = [50000] // Mock data - first milestone earned
+    
+    private var earnedStreakBadges: [Int] {
+        return earnedBadges
+            .filter { $0.badgeType == BadgeType.streak.rawValue }
+            .map { $0.badgeThreshold }
+    }
+    
+    private var earnedSavingsBadges: [Int] {
+        return earnedBadges
+            .filter { $0.badgeType == BadgeType.moneySaved.rawValue }
+            .map { $0.badgeThreshold }
+    }
     
     var body: some View {
         NavigationView {
@@ -36,7 +52,17 @@ struct BadgeListView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
                     
-                    ScrollView {
+                    if isLoading {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(1.5)
+                        Text("Loading badges...")
+                            .foregroundColor(.white)
+                            .padding(.top)
+                        Spacer()
+                    } else {
+                        ScrollView {
                         VStack(spacing: 40) {
                             // Streaks Section
                             VStack(alignment: .leading, spacing: 20) {
@@ -81,13 +107,52 @@ struct BadgeListView: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        }
                     }
                     
                     Spacer()
                 }
             }
+            .background(Color(red: 0x12/255, green: 0x14/255, blue: 0x18/255))
         }
         .navigationBarHidden(true)
+        .onAppear {
+            loadBadgeData()
+        }
+    }
+      
+    
+    private func loadBadgeData() {
+        Task {
+            do {
+                // Load user record
+                userRecord = try await registerVM.fetchByRecordName()
+                
+                guard let userRecord = userRecord else {
+                    isLoading = false
+                    return
+                }
+                
+                // Check if user has a buddy
+                if !userRecord.buddyCode.isEmpty && userRecord.buddyCode != "-" {
+                    buddyRecord = try await registerVM.fetchByUniqueCode(userRecord.buddyCode)
+                    
+                    // Fetch earned badges for this buddy pair
+                    if let buddyRecord = buddyRecord {
+                        let badges = try await buddyBadgeVM.fetchTogetherBadge(
+                            userRecordName: userRecord.getRecord().recordID.recordName,
+                            buddyRecordName: buddyRecord.getRecord().recordID.recordName
+                        )
+                        earnedBadges = badges ?? []
+                    }
+                }
+                
+                isLoading = false
+            } catch {
+                print("Error loading badge data: \(error)")
+                isLoading = false
+            }
+        }
     }
 }
 
@@ -149,4 +214,6 @@ struct MoneyBadge: View {
 
 #Preview {
     BadgeListView()
+        .environmentObject(RegisterViewModel())
+        .environmentObject(BuddyBadgeViewModel())
 }
