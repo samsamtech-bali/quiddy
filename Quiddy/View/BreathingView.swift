@@ -30,9 +30,10 @@ enum BreathingState {
 }
 
 enum CirclePosition {
-    static let circleA = CGPoint(x: 60, y: 250)
-    static let circleB = CGPoint(x: 350, y: 520)
-    static let center = CGPoint(x: 197, y: 390)
+    static let circleA = CGPoint(x: 60, y: 400)
+    static let circleB = CGPoint(x: 330, y: 550)
+    static let circleC = CGPoint(x: 360, y: 300)
+    static let center = CGPoint(x: 200, y: 400)
 }
 
 
@@ -42,7 +43,12 @@ struct BreathingView: View {
     @State var isAnimating: Bool = false
     @State var position1: CGPoint = CirclePosition.circleA
     @State var position2: CGPoint = CirclePosition.circleB
+    @State var position3: CGPoint = CirclePosition.circleC
     @State var breathingTask: Task<Void, Never>? = nil
+    @State private var blurRadius: CGFloat = 15
+    @State private var scale1: CGFloat = 1.0
+    @State private var scale2: CGFloat = 1.0
+    @State private var scale3: CGFloat = 1.0
     
     var body: some View {
         ZStack {
@@ -61,9 +67,11 @@ struct BreathingView: View {
                         context.drawLayer { ctx in
                             let circle0 = ctx.resolveSymbol(id: 0)!
                             let circle1 = ctx.resolveSymbol(id: 1)!
+                            let circle2 = ctx.resolveSymbol(id: 2)!
                             
                             ctx.draw(circle0, at: CirclePosition.center)
                             ctx.draw(circle1, at: CirclePosition.center)
+                            ctx.draw(circle2, at: CirclePosition.center)
                         }
                         
                     } symbols: {
@@ -78,6 +86,12 @@ struct BreathingView: View {
                             .frame(width: 300, height: 180)
                             .position(position2)
                             .tag(1)
+                        
+                        Circle()
+                            .fill(.black)
+                            .frame(width: 350, height: 200)
+                            .position(position3)
+                            .tag(2)
                     }
                 }
             }
@@ -89,7 +103,7 @@ struct BreathingView: View {
                         .foregroundStyle(.white)
                     Text("\(count)s")
                         .font(.subheadline)
-                        .fontWeight(.bold)
+                        .fontWeight(.semibold)
                         .foregroundStyle(.white)
                     Spacer()
                 } else {
@@ -114,32 +128,44 @@ struct BreathingView: View {
                         state = .breatheIn
                         position1 = CirclePosition.circleA
                         position2 = CirclePosition.circleB
+                        position3 = CirclePosition.circleC
                         count = Int(state.duration)
-                        isAnimating = true
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                            isAnimating = true
+                        }
                         breathingTask = startCycle()
                     } else {
                         breathingTask?.cancel()
                         breathingTask = nil
-                        isAnimating = false
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                            isAnimating = false
+                        }
                         count = Int(state.duration)
-                        withAnimation(.linear(duration: 1)) {
+                        withAnimation(.easeOut(duration: 1)) {
                             position1 = CirclePosition.circleA
                             position2 = CirclePosition.circleB
+                            position3 = CirclePosition.circleC
+                            scale1 = 1.0
+                            scale2 = 1.0
+                            scale3 = 1.0
+                            blurRadius = 15
                         }
-                        
                     }
                 }) {
                     Text(isAnimating ? "Stop" : "Start")
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundStyle(.white)
-                        .padding(70)
+                        .padding(isAnimating ? 30 : 70)
                         .overlay(
                             Circle()
                                 .stroke(Color.white, lineWidth: 1)
                         )
                 }
-                
+                .scaleEffect(isAnimating ? 0.8 : 1.0)
+                .opacity(isAnimating ? 0.6 : 1.0)
+                .offset(y: isAnimating ? 200 : 0)
+                .animation(.spring(response: 0.6, dampingFraction: 0.7), value: isAnimating)
                 
                 Spacer()
             }
@@ -173,12 +199,15 @@ struct BreathingView: View {
         case .breatheIn:
             position1 = CirclePosition.center
             position2 = CirclePosition.center
+            position3 = CirclePosition.center
         case .hold:
             position1 = CirclePosition.center
             position2 = CirclePosition.center
+            position3 = CirclePosition.center
         case .breatheOut:
             position1 = CirclePosition.circleA
             position2 = CirclePosition.circleB
+            position3 = CirclePosition.circleC
         }
     }
     
