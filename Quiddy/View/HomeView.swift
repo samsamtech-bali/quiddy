@@ -30,24 +30,6 @@ struct HomeView: View {
     @State var combinedMoneySaved: Int = 0
     @State var earnedBadges: [BuddyBadgeModel] = []
     
-    private var daysSmokesFree: Int {
-        let calendar = Calendar.current
-        let now = Date()
-        let components = calendar.dateComponents([.day], from: registerViewModel.stopDate, to: now)
-        return max(0, components.day ?? 0)
-    }
-    
-    private var moneySaved: Int {
-        let days = daysSmokesFree
-        let dailyCost = Double(registerViewModel.cigPerDay) * registerViewModel.pricePerCig
-        return Int(dailyCost * Double(days))
-    }
-    
-    private func resetSmokeFreeDays() {
-        registerViewModel.stopDate = Date()
-        registerViewModel.updatedStopDate = Date()
-    }
-    
     private var earnedBadgeCount: Int {
         return earnedBadges.count
     }
@@ -144,11 +126,17 @@ struct HomeView: View {
         NavigationView {
             VStack(spacing: 20) {
             CardView(
-                username: registerViewModel.username.isEmpty ? "User" : registerViewModel.username,
-                daysSmokesFree: daysSmokesFree,
-                moneySaved: moneySaved,
+                username: userRecord?.username ?? "User",
+                daysSmokesFree: userFreeSmokeDays,
+                moneySaved: userMoneySaved,
                 onRefresh: {
-                    resetSmokeFreeDays()
+                    Task {
+                        guard let userRecord = self.userRecord else { return }
+                        
+                        guard let buddyRecord = self.buddyRecord else { return }
+                        
+                        await buddyBadgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
+                    }
                 }
             )
             .offset(y: 140)
