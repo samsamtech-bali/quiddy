@@ -106,7 +106,7 @@ struct InviteView: View {
                         .foregroundColor(.white)
                     
                     HStack {
-                        Text(registerVM.quiddyCode)
+                        Text(userRecord?.quiddyCode ?? "No Value")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.black)
                             .frame(maxWidth: .infinity, alignment: .leading)
