@@ -113,12 +113,14 @@ struct BadgeListView: View {
                     Spacer()
                 }
             }
+            .background(Color(red: 0x12/255, green: 0x14/255, blue: 0x18/255))
         }
         .navigationBarHidden(true)
         .onAppear {
             loadBadgeData()
         }
     }
+      
     
     private func loadBadgeData() {
         Task {
