@@ -10,9 +10,12 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var registerViewModel: RegisterViewModel
     @EnvironmentObject private var buddyBadgeVM: BuddyBadgeViewModel
+    @EnvironmentObject private var buddyVM: BuddyViewModel
     
     @State private var showingInviteView = false
     @State private var hasBuddy = false
+    @State private var hasPendingRequest = false
+    @State private var incomingBuddyUsername = ""
     
     @State private var userRecord: QuiddyUserModel?
     @State private var buddyRecord: QuiddyUserModel?
@@ -85,6 +88,7 @@ struct HomeView: View {
                 
                 if !record.buddyCode.isEmpty && record.buddyCode != "-" {
                     self.hasBuddy = true
+                    self.hasPendingRequest = false
                     
                     let buddyRecord = try await registerViewModel.fetchByUniqueCode(record.buddyCode)
                     self.buddyRecord = buddyRecord
@@ -106,8 +110,21 @@ struct HomeView: View {
                     )
                     earnedBadges = badges ?? []
                 }
+                else if !record.incomingCode.isEmpty && record.incomingCode != "-" {
+                    // Has pending buddy request
+                    self.hasBuddy = false
+                    self.hasPendingRequest = true
+                    
+                    // Fetch the username of the person who sent the request
+                    let senderRecord = try await registerViewModel.fetchByUniqueCode(record.incomingCode)
+                    self.incomingBuddyUsername = senderRecord?.username ?? "Someone"
+                    
+                    self.buddyRecord = nil
+                    self.earnedBadges = []
+                }
                 else {
                     self.hasBuddy = false
+                    self.hasPendingRequest = false
                     self.buddyRecord = nil
                     self.earnedBadges = []
                 }
@@ -116,6 +133,7 @@ struct HomeView: View {
             } catch {
                 print("Error loading user/buddy data: \(error)")
                 self.hasBuddy = false
+                self.hasPendingRequest = false
                 self.buddyRecord = nil
                 self.earnedBadges = []
             }
@@ -137,11 +155,32 @@ struct HomeView: View {
             
             BuddyCardView(
                 hasBuddy: hasBuddy,
-                username: buddyRecord?.username ?? "Find a buddy",
+                hasPendingRequest: hasPendingRequest,
+                username: hasPendingRequest ? incomingBuddyUsername : (buddyRecord?.username ?? "Find a buddy"),
                 daysSmokesFree: buddyFreeSmokeDays,
                 moneySaved: buddyMoneySaved,
                 onAddBuddyTap: {
                     showingInviteView = true
+                },
+                onAcceptRequest: {
+                    Task {
+                        guard let userRecord = self.userRecord else { return }
+                        await buddyVM.acceptBuddy(
+                            userRecord: userRecord.getRecord().recordID,
+                            incomingCode: userRecord.incomingCode
+                        )
+                        loadUserAndBuddyData() // Refresh the view
+                    }
+                },
+                onDeclineRequest: {
+                    Task {
+                        guard let userRecord = self.userRecord else { return }
+                        await buddyVM.rejectBuddy(
+                            userRecord: userRecord.getRecord().recordID,
+                            incomingCode: userRecord.incomingCode
+                        )
+                        loadUserAndBuddyData() // Refresh the view
+                    }
                 }
             )
             .offset(y: 140)
@@ -225,4 +264,5 @@ struct BadgePreview: View {
     HomeView()
         .environmentObject(RegisterViewModel())
         .environmentObject(BuddyBadgeViewModel())
+        .environmentObject(BuddyViewModel())
 }
