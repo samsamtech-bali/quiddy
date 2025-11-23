@@ -13,7 +13,7 @@ class BuddyNudgeViewModel: ObservableObject {
     let databasePublic: CKDatabase
     
     init() {
-        self.container = CKContainer(identifier: "iCloud.com.stephan.iCloud")
+        self.container = CKContainer(identifier: "iCloud.com.quiby.iCloud")
         self.databasePublic = container.publicCloudDatabase
     }
     
