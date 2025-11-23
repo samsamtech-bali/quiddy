@@ -5,16 +5,17 @@
 //  Created by stephan on 15/11/25.
 //
 
-import SwiftUI
+import SwiftUI 
 
 struct IntroContentOne: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
             
-            Circle()
-                .fill(Color(hex: "#D9D9D9"))
-                .frame(width: 120, height: 120)
+            Image("Logo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150, height: 150)
             
             Spacer()
             
@@ -32,6 +33,7 @@ struct IntroContentOne: View {
                     .padding(.horizontal, 32)
             }
         }
+        
     }
 }
 
