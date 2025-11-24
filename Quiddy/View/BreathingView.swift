@@ -150,7 +150,6 @@ struct BreathingView: View {
                             scale3 = 1.0
                             blurRadius = 15
                         }
-                        
                     }
                 }) {
                     Text(isAnimating ? "Stop" : "Start")
@@ -209,7 +208,7 @@ struct BreathingView: View {
         case .breatheOut:
             position1 = CirclePosition.circleA
             position2 = CirclePosition.circleB
-            position3 = CirclePosition.center
+            position3 = CirclePosition.circleC
         }
     }
     

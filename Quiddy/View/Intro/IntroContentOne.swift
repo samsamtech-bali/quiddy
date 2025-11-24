@@ -5,7 +5,7 @@
 //  Created by stephan on 15/11/25.
 //
 
-import SwiftUI
+import SwiftUI 
 
 struct IntroContentOne: View {
     var body: some View {
@@ -33,6 +33,7 @@ struct IntroContentOne: View {
                     .padding(.horizontal, 32)
             }
         }
+        
     }
 }
 
