@@ -12,9 +12,10 @@ struct IntroContentOne: View {
         VStack(spacing: 0) {
             Spacer()
             
-            Circle()
-                .fill(Color(hex: "#D9D9D9"))
-                .frame(width: 120, height: 120)
+            Image("QuibyLogo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 200, height: 200)
             
             Spacer()
             
