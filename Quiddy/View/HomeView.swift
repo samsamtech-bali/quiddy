@@ -83,6 +83,7 @@ struct HomeView: View {
                     
                     guard let buddyRecord = self.buddyRecord else { return }
                     buddyFreeSmokeDays = buddyBadgeVM.daysSmokesFree(buddyRecord.updatedStopDate)
+                    print("buddy free smoke days: \(buddyFreeSmokeDays )")
                     buddyMoneySaved = buddyBadgeVM.calculateMoneySaved(record: buddyRecord)
                     
                     combinedFreeSmokeDays = buddyBadgeVM.calculateSharedStreak(since: record.buddyStartDate)
@@ -99,6 +100,7 @@ struct HomeView: View {
                         userRecordName: record.getRecord().recordID.recordName,
                         buddyRecordName: buddyRecord.getRecord().recordID.recordName
                     )
+                    
                     earnedBadges = badges ?? []
                     
                     // Check for newly unlocked badges
@@ -180,99 +182,97 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-            CardView(
-                username: userRecord?.username ?? "User",
-                daysSmokesFree: userFreeSmokeDays,
-                moneySaved: userMoneySaved,
-                onRefresh: {
-                    Task {
-                        guard let userRecord = self.userRecord else { return }
-                        
-                        guard let buddyRecord = self.buddyRecord else { return }
-                        
-                        await buddyBadgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
+                CardView(
+                    username: userRecord?.username ?? "User",
+                    daysSmokesFree: userFreeSmokeDays,
+                    moneySaved: userMoneySaved,
+                    onRefresh: {
+                        Task {
+                            guard let userRecord = self.userRecord else { return }
+                            
+                            guard let buddyRecord = self.buddyRecord else { return }
+                            
+                            await buddyBadgeVM.reset(userRecord: userRecord.getRecord().recordID, buddyRecord: buddyRecord.getRecord().recordID, userRelapseDate: &userRecord.relapseDate)
+                        }
                     }
-                }
-            )
-            .offset(y: 140)
-            
-            BuddyCardView(
-                hasBuddy: hasBuddy,
-                hasPendingRequest: hasPendingRequest,
-                hasOutgoingRequest: hasOutgoingRequest,
-                username: hasPendingRequest ? incomingBuddyUsername : (buddyRecord?.username ?? "Find a buddy"),
-                daysSmokesFree: buddyFreeSmokeDays,
-                moneySaved: buddyMoneySaved,
-                onAddBuddyTap: {
-                    showingInviteView = true
-                },
-                onAcceptRequest: {
-                    Task {
-                        guard let userRecord = self.userRecord else { return }
-                        await buddyVM.acceptBuddy(
-                            userRecord: userRecord.getRecord().recordID,
-                            incomingCode: userRecord.incomingCode
-                        )
-                        loadUserAndBuddyData() // Refresh the view
-                    }
-                },
-                onDeclineRequest: {
-                    Task {
-                        guard let userRecord = self.userRecord else { return }
-                        await buddyVM.rejectBuddy(
-                            userRecord: userRecord.getRecord().recordID,
-                            incomingCode: userRecord.incomingCode
-                        )
-                        loadUserAndBuddyData() // Refresh the view
-                    }
-                }
-            )
-            .offset(y: 140)
-            
-            // Badges Together Section
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Badges Together")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                        
-                        Text("\(earnedBadgeCount) of \(totalBadgeCount) earned")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    
-                    Spacer()
-                    
-                    NavigationLink(destination: BadgeListView()
-                        .environmentObject(registerViewModel)
-                        .environmentObject(buddyBadgeVM)
-                    ) {
-                        Image(systemName: "chevron.right")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                    }
-                }
-                .padding(.horizontal, 20)
+                )
+                .padding(.top, 50)
                 
-                // Badge Preview
-                HStack(spacing: 10) {
-                    ForEach(badgePreviewData, id: \.index) { badge in
-                        BadgePreview(badgeIndex: badge.index, isEarned: badge.isEarned)
+                BuddyCardView(
+                    hasBuddy: hasBuddy,
+                    hasPendingRequest: hasPendingRequest,
+                    hasOutgoingRequest: hasOutgoingRequest,
+                    username: hasPendingRequest ? incomingBuddyUsername : (buddyRecord?.username ?? "Find a buddy"),
+                    daysSmokesFree: buddyFreeSmokeDays,
+                    moneySaved: buddyMoneySaved,
+                    onAddBuddyTap: {
+                        showingInviteView = true
+                    },
+                    onAcceptRequest: {
+                        Task {
+                            guard let userRecord = self.userRecord else { return }
+                            await buddyVM.acceptBuddy(
+                                userRecord: userRecord.getRecord().recordID,
+                                incomingCode: userRecord.incomingCode
+                            )
+                            loadUserAndBuddyData() // Refresh the view
+                        }
+                    },
+                    onDeclineRequest: {
+                        Task {
+                            guard let userRecord = self.userRecord else { return }
+                            await buddyVM.rejectBuddy(
+                                userRecord: userRecord.getRecord().recordID,
+                                incomingCode: userRecord.incomingCode
+                            )
+                            loadUserAndBuddyData() // Refresh the view
+                        }
                     }
+                )
+                
+                // Badges Together Section
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Badges Together")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            
+                            Text("\(earnedBadgeCount) of \(totalBadgeCount) earned")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        
+                        Spacer()
+                        
+                        NavigationLink(destination: BadgeListView()
+                            .environmentObject(registerViewModel)
+                            .environmentObject(buddyBadgeVM)
+                        ) {
+                            Image(systemName: "chevron.right")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .padding(.horizontal, 20)
                     
-                    Spacer()
+                    // Badge Preview
+                    HStack(spacing: 10) {
+                        ForEach(badgePreviewData, id: \.index) { badge in
+                            BadgePreview(badgeIndex: badge.index, isEarned: badge.isEarned)
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
+                
+                Spacer()
             }
-            .offset(y: 150)
-            
-            Spacer()
-        }
-        .padding()
-        .background(Color(red: 0x12/255, green: 0x14/255, blue: 0x18/255))
-        .ignoresSafeArea()
+            .padding()
+            .background(Color(red: 0x12/255, green: 0x14/255, blue: 0x18/255))
+            .ignoresSafeArea()
         }
         .navigationBarHidden(true)
         .overlay {
@@ -300,7 +300,7 @@ struct HomeView: View {
             }
         }
     }
-        
+    
 }
 
 struct BadgePreview: View {
